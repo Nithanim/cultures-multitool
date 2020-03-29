@@ -3,14 +3,22 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>me.nithanim.cultures.multitool</groupId>
-  <artifactId>root</artifactId>
+  <groupId>me.nithanim.cultures.formats</groupId>
+  <artifactId>formats</artifactId>
   <packaging>pom</packaging>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Cultures Multitool</name>
+  <name>Cultures Formats</name>
+  <parent>
+    <groupId>me.nithanim.cultures.multitool</groupId>
+    <artifactId>root</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
   <modules>
-    <module>formats</module>
-    <module>gui</module>
+    <module>format-lib</module>
+    <module>format-cif</module>
+    <module>format-bmd</module>
+    <module>format-pcx</module>
   </modules>
   <dependencyManagement>
     <dependencies>
