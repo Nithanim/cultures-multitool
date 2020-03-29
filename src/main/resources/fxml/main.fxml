@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <top>
+      <VBox BorderPane.alignment="CENTER">
+         <children>
+            <MenuBar>
+              <menus>
+                <Menu mnemonicParsing="false" text="File">
+                  <items>
+                        <MenuItem fx:id="menuItemOpen" mnemonicParsing="false" text="Open" />
+                    <MenuItem mnemonicParsing="false" text="Close" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Edit">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="Delete" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="About" />
+                  </items>
+                </Menu>
+              </menus>
+            </MenuBar>
+            <HBox>
+               <children>
+                  <TextField HBox.hgrow="ALWAYS" />
+                  <Button mnemonicParsing="false" text="Reload" />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </top>
+   <center>
+      <SplitPane dividerPositions="0.29949874686716793" prefHeight="160.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+        <items>
+            <BorderPane prefHeight="200.0" prefWidth="200.0">
+               <center>
+                  <TreeView fx:id="fileTree" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER" />
+               </center>
+            </BorderPane>
+            <VBox fx:id="viewerPane" prefHeight="200.0" prefWidth="100.0" />
+        </items>
+      </SplitPane>
+   </center>
+</BorderPane>
