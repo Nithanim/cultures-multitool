@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <artifactId>gui</artifactId>
-  <packaging>pom</packaging>
+  <packaging>jar</packaging>
   <version>0.0.1-SNAPSHOT</version>
   <name>Cultures Multitool Gui</name>
   <parent>
@@ -23,11 +23,6 @@
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
       <version>11.0.2</version>
-    </dependency>
-    <dependency>
-      <groupId>me.nithanim.cultures.format</groupId>
-      <artifactId>lib</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -52,6 +47,16 @@
     <dependency>
       <groupId>me.nithanim.cultures.formats</groupId>
       <artifactId>pcx</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>me.nithanim.cultures.formats</groupId>
+      <artifactId>lib</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>me.nithanim.cultures.formats</groupId>
+      <artifactId>bmd</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
