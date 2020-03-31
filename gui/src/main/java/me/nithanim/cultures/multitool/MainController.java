@@ -1,6 +1,5 @@
 package me.nithanim.cultures.multitool;
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -10,28 +9,33 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ResourceBundle;
 import javafx.beans.InvalidationListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import lombok.SneakyThrows;
 import lombok.Value;
 import me.nithanim.cultures.format.cif.CifFile;
 import me.nithanim.cultures.format.cif.CifFileUtil;
+import me.nithanim.cultures.format.lib.io.reading.FileData;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile.LibFileDirectory;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile.LibFileFile;
-import me.nithanim.cultures.format.pcx.PcxFileReader;
 import me.nithanim.cultures.format.pcx.PcxFile;
+import me.nithanim.cultures.format.pcx.PcxFileReader;
 import me.nithanim.cultures.format.pcx.PcxUtil;
 import org.apache.commons.io.IOUtils;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeRegular;
@@ -40,52 +44,71 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 public class MainController implements Initializable {
   @FXML private MenuItem menuItemOpen;
+  @FXML private MenuItem menuItemBmdTool;
   @FXML private TreeView<TreeData> fileTree;
   @FXML private VBox viewerPane;
+
+  private Stage bmdToolStage;
+  private BmdToolController bmdToolController;
 
   @SneakyThrows
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
+    menuItemBmdTool.setOnAction(this::openBmdTool);
+
     Path p =
         Paths.get(
             "/mount/data/games/weltwunder/dosdevices/c:/GOG Games/8th Wonder of the World/DataX/Libs/data0001.lib");
     ReadableLibFile lib = new ReadableLibFile(p);
 
     fileTree.setShowRoot(false);
-    fileTree.setRoot(buildTree(lib.getRoot()));
+    fileTree.setRoot(buildTree("", lib.getRoot()));
     fileTree
         .getSelectionModel()
         .selectedItemProperty()
-        .addListener(
-            (observable, oldValue, newValue) -> {
-              if (newValue.getValue() != null) {
-                ItemHandler handler = newValue.getValue().getHandler();
-                viewerPane.getChildren().clear();
-                if (handler != null) {
-                  try {
-                    handler.display(viewerPane);
-                  } catch (Exception ex) {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ex.printStackTrace(new PrintWriter(baos));
-                    viewerPane.getChildren().add(makeItemHandlerTextArea(baos.toString()));
-                  }
-                }
-              }
-            });
+        .addListener(this::onFileTressSelectionChanged);
   }
 
-  private TreeItem<TreeData> buildTree(LibFileDirectory rootDir) {
+  private void onFileTressSelectionChanged(
+      ObservableValue<? extends TreeItem<TreeData>> observable,
+      TreeItem<TreeData> oldValue,
+      TreeItem<TreeData> newValue) {
+    if (newValue.getValue() != null) {
+      ItemHandler handler = newValue.getValue().getHandler();
+      viewerPane.getChildren().clear();
+      if (handler != null) {
+        try {
+          handler.display(viewerPane);
+        } catch (Exception ex) {
+          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          ex.printStackTrace(new PrintWriter(baos));
+          viewerPane.getChildren().add(makeItemHandlerTextArea(baos.toString()));
+        }
+      }
+      if (bmdToolController != null) {
+        bmdToolController.onTreeChange(newValue.getValue());
+      }
+    }
+  }
+
+  private TreeItem<TreeData> buildTree(String path, LibFileDirectory rootDir) {
     TreeItem<TreeData> rootItem = new TreeItem<>();
     rootItem.setGraphic(FontIcon.of(FontAwesomeRegular.FILE_ARCHIVE));
     for (LibFileDirectory dir : rootDir.getDirectories().values()) {
-      TreeItem<TreeData> sub = buildTree(dir);
-      sub.setValue(new TreeData(true, dir.getName(), null));
+      TreeItem<TreeData> sub = buildTree(path + "\\" + dir.getName(), dir);
+      sub.setValue(new TreeData(true, path + "\\" + dir.getName(), dir.getName(), null, null));
       sub.setGraphic(FontIcon.of(FontAwesomeRegular.FOLDER));
       rootItem.getChildren().add(sub);
     }
     for (LibFileFile file : rootDir.getFiles().values()) {
       TreeItem<TreeData> item = new TreeItem<>();
-      item.setValue(new TreeData(false, file.getName(), getItemHandler(file)));
+      item.setValue(
+          new TreeData(
+              false,
+              path + "\\" + file.getName(),
+              file.getName(),
+              file.getData(),
+              getItemHandler(file)));
       item.setGraphic(getIconForFile(file));
       rootItem.getChildren().add(item);
     }
@@ -112,8 +135,7 @@ public class MainController implements Initializable {
   }
 
   private void handleTxt(LibFileFile file, Pane pane) throws IOException {
-    String text =
-        IOUtils.toString(file.getData().getInputStream(), StandardCharsets.ISO_8859_1);
+    String text = IOUtils.toString(file.getData().getInputStream(), StandardCharsets.ISO_8859_1);
     TextArea textArea = makeItemHandlerTextArea(text);
     pane.getChildren().add(textArea);
   }
@@ -128,14 +150,13 @@ public class MainController implements Initializable {
   private void handlePcx(LibFileFile file, Pane pane) {
     try {
       PcxFile pcx = new PcxFileReader().read(file.getData().getInputStream());
-      Image image = convertToFxImage(PcxUtil.convertToImage(pcx));
+      Image image = FxUtil.convertToFxImage(PcxUtil.convertToImage(pcx));
       InvalidationListener il =
           observable -> {
             if (!image.isBackgroundLoading()) {
               if (image.isError()) {
                 pane.getChildren()
-                    .add(
-                        makeItemHandlerTextArea(exceptionToString(pane, image.getException())));
+                    .add(makeItemHandlerTextArea(exceptionToString(pane, image.getException())));
               } else {
                 pane.getChildren().add(new ImageView(image));
               }
@@ -169,10 +190,29 @@ public class MainController implements Initializable {
     return textArea;
   }
 
+  @SneakyThrows
+  private void openBmdTool(ActionEvent ae) {
+    if (bmdToolStage == null) {
+      FXMLLoader loader = new FXMLLoader(this.getClass().getResource("/fxml/bmdtool.fxml"));
+      bmdToolController = new BmdToolController();
+      loader.setController(bmdToolController);
+      loader.setClassLoader(this.getClass().getClassLoader());
+      Parent root = loader.load();
+      Scene scene = new Scene(root);
+      scene.getStylesheets().add("/styles/styles.css");
+      bmdToolStage = new Stage();
+      bmdToolStage.setTitle("BmdTool - Cultures Multitool");
+      bmdToolStage.setScene(scene);
+    }
+    bmdToolStage.show();
+  }
+
   @Value
-  private static class TreeData {
+  static class TreeData {
     boolean isDir;
+    String fullPath;
     String name;
+    FileData data;
     ItemHandler handler;
 
     @Override
@@ -209,20 +249,5 @@ public class MainController implements Initializable {
     } else {
       return null;
     }
-  }
-
-  private static Image convertToFxImage(BufferedImage image) {
-    WritableImage wr = null;
-    if (image != null) {
-      wr = new WritableImage(image.getWidth(), image.getHeight());
-      PixelWriter pw = wr.getPixelWriter();
-      for (int x = 0; x < image.getWidth(); x++) {
-        for (int y = 0; y < image.getHeight(); y++) {
-          pw.setArgb(x, y, image.getRGB(x, y));
-        }
-      }
-    }
-
-    return new ImageView(wr).getImage();
   }
 }

@@ -10,6 +10,7 @@ module culturestools.gui {
   requires culturestools.format.lib;
   requires culturestools.format.cif;
   requires culturestools.format.pcx;
+  requires culturestools.format.bmd;
   requires java.desktop;
 
   opens me.nithanim.cultures.multitool to
