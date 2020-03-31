@@ -1,6 +1,7 @@
 package me.nithanim.cultures.multitool;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -25,6 +26,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import lombok.SneakyThrows;
 import lombok.Value;
@@ -55,10 +57,29 @@ public class MainController implements Initializable {
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
     menuItemBmdTool.setOnAction(this::openBmdTool);
+    menuItemOpen.setOnAction(
+        ae -> {
+          FileChooser fc = new FileChooser();
+          File f = fc.showOpenDialog(fileTree.getScene().getWindow());
+          try {
+            readFile(f.toPath());
+          } catch (Exception ex) {
+            viewerPane.getChildren().clear();
+            viewerPane.getChildren().add(makeItemHandlerTextArea(exceptionToString(ex)));
+          }
+        });
 
     Path p =
         Paths.get(
             "/mount/data/games/weltwunder/dosdevices/c:/GOG Games/8th Wonder of the World/DataX/Libs/data0001.lib");
+    try {
+      readFile(p);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+  }
+
+  private void readFile(Path p) throws IOException {
     ReadableLibFile lib = new ReadableLibFile(p);
 
     fileTree.setShowRoot(false);
@@ -80,9 +101,8 @@ public class MainController implements Initializable {
         try {
           handler.display(viewerPane);
         } catch (Exception ex) {
-          ByteArrayOutputStream baos = new ByteArrayOutputStream();
-          ex.printStackTrace(new PrintWriter(baos));
-          viewerPane.getChildren().add(makeItemHandlerTextArea(baos.toString()));
+          viewerPane.getChildren().clear();
+          viewerPane.getChildren().add(makeItemHandlerTextArea(exceptionToString(ex)));
         }
       }
       if (bmdToolController != null) {
@@ -156,7 +176,7 @@ public class MainController implements Initializable {
             if (!image.isBackgroundLoading()) {
               if (image.isError()) {
                 pane.getChildren()
-                    .add(makeItemHandlerTextArea(exceptionToString(pane, image.getException())));
+                    .add(makeItemHandlerTextArea(exceptionToString(image.getException())));
               } else {
                 pane.getChildren().add(new ImageView(image));
               }
@@ -166,16 +186,15 @@ public class MainController implements Initializable {
       il.invalidated(image.errorProperty());
     } catch (Exception ex) {
       pane.getChildren().clear();
-      pane.getChildren().add(makeItemHandlerTextArea(exceptionToString(pane, ex)));
+      pane.getChildren().add(makeItemHandlerTextArea(exceptionToString(ex)));
     }
   }
 
-  private String exceptionToString(Pane pane, Exception ex) {
+  private String exceptionToString(Exception ex) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintWriter pw = new PrintWriter(baos);
     ex.printStackTrace(pw);
     pw.flush();
-    pane.getChildren().clear();
     return baos.toString();
   }
 
