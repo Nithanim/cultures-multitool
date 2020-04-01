@@ -128,7 +128,7 @@ public class MainController implements Initializable {
       loader.setClassLoader(this.getClass().getClassLoader());
       Parent root = loader.load();
       Scene scene = new Scene(root);
-      scene.getStylesheets().add("/styles/styles.css");
+      scene.getStylesheets().add(this.getClass().getResource("/styles/styles.css").toString());
       bmdToolStage = new Stage();
       bmdToolStage.setTitle("BmdTool - Cultures Multitool");
       bmdToolStage.setScene(scene);
