@@ -69,10 +69,10 @@ public class MainController implements Initializable {
           }
         });
 
-    Path p =
-        Paths.get(
-            "/mount/data/games/weltwunder/dosdevices/c:/GOG Games/8th Wonder of the World/DataX/Libs/data0001.lib");
     try {
+      Path p =
+          Paths.get(
+              "/mount/data/games/weltwunder/dosdevices/c:/GOG Games/8th Wonder of the World/DataX/Libs/data0001.lib");
       readFile(p);
     } catch (Exception ex) {
       ex.printStackTrace();
