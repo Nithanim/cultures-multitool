@@ -45,6 +45,9 @@ public class MainController implements Initializable {
         ae -> {
           FileChooser fc = new FileChooser();
           File f = fc.showOpenDialog(fileTree.getScene().getWindow());
+          if(f == null) {
+            return;
+          }
           try {
             readFile(f.toPath());
           } catch (Exception ex) {
