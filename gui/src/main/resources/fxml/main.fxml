@@ -40,8 +40,8 @@
             </MenuBar>
             <HBox>
                <children>
-                  <TextField HBox.hgrow="ALWAYS" />
-                  <Button mnemonicParsing="false" text="Reload" />
+                  <TextField fx:id="tfFilePath" HBox.hgrow="ALWAYS" />
+                  <Button fx:id="btnFileReload" mnemonicParsing="false" text="Reload" />
                </children>
             </HBox>
             <CheckBox fx:id="chbBmdView" mnemonicParsing="false" text="Bmd view">

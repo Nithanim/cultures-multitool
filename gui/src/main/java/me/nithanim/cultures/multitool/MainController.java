@@ -10,8 +10,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.Priority;
@@ -27,6 +29,8 @@ import org.kordamp.ikonli.fontawesome5.FontAwesomeRegular;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 public class MainController implements Initializable {
+  @FXML private Button btnFileReload;
+  @FXML private TextField tfFilePath;
   @FXML private MenuItem menuItemOpen;
   @FXML private TreeView<TreeData> fileTree;
   @FXML private VBox viewerPane;
@@ -45,19 +49,15 @@ public class MainController implements Initializable {
           if (f == null) {
             return;
           }
-          try {
-            readFile(f.toPath());
-          } catch (Exception ex) {
-            viewerPane.getChildren().clear();
-            viewerPane.getChildren().add(Util.makeTextAreaWithText(Util.exceptionToString(ex)));
-          }
+          Path p = f.toPath();
+          openFile(p);
         });
-
+    btnFileReload.setOnAction(ae -> openFile(Paths.get(tfFilePath.getText())));
     try {
       Path p =
           Paths.get(
               "/mount/data/games/weltwunder/dosdevices/c:/GOG Games/8th Wonder of the World/DataX/Libs/data0001.lib");
-      readFile(p);
+      openFile(p);
     } catch (Exception ex) {
       ex.printStackTrace();
     }
@@ -84,7 +84,19 @@ public class MainController implements Initializable {
             });
   }
 
-  private void readFile(Path p) throws IOException {
+  private void openFile(Path p) {
+    try {
+      fileTree.setRoot(null);
+      onFileTreeSelectionChanged(null);
+      readAndUseFile(p);
+      tfFilePath.setText(p.toString());
+    } catch (Exception ex) {
+      viewerPane.getChildren().clear();
+      viewerPane.getChildren().add(Util.makeTextAreaWithText(Util.exceptionToString(ex)));
+    }
+  }
+
+  private void readAndUseFile(Path p) throws IOException {
     ReadableLibFile lib = new ReadableLibFile(p);
 
     fileTree.setShowRoot(false);
@@ -115,6 +127,8 @@ public class MainController implements Initializable {
           bmdToolController.onTreeChange(value);
         }
       }
+    } else {
+      viewerPane.getChildren().clear();
     }
   }
 
