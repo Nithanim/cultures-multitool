@@ -14,6 +14,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import lombok.SneakyThrows;
+import me.nithanim.cultures.format.bmd.BmdDecodeException;
 import me.nithanim.cultures.format.bmd.BmdFile;
 import me.nithanim.cultures.format.bmd.LittleEndianDataInputStream;
 import me.nithanim.cultures.format.bmd.RawBmdFile;
@@ -35,30 +36,33 @@ public class BmdToolController implements Initializable {
   @Override
   public void initialize(URL location, ResourceBundle resources) {}
 
-  private void setBmd(TreeData treeData) throws IOException {
+  @SneakyThrows
+  private void setBmd(TreeData treeData) {
     tfBmdPath.setText(treeData.getFullPath());
     bmdFile = readBmd(treeData.getData().getInputStream());
     updateFrames();
   }
 
-  private void setPcx(TreeData treeData) throws IOException {
+  @SneakyThrows
+  private void setPcx(TreeData treeData) {
     tfPcxPath.setText(treeData.getFullPath());
     pcxFile = new PcxFileReader().read(treeData.getData().getInputStream());
     updateFrames();
   }
 
-  private void updateFrames() throws IOException {
+  private void updateFrames() throws BmdDecodeException {
     if (bmdFile != null && pcxFile != null) {
       paneFrames.getChildren().clear();
       for (int i = 0; i < bmdFile.getSize(); i++) {
-        BufferedImage img = bmdFile.get(i, pcxFile.getPalette());
-        Image image = FxUtil.convertToFxImage(img);
-        paneFrames.getChildren().add(new ImageView(image));
+        BufferedImage img = bmdFile.getFrame(i, pcxFile.getPalette());
+        if (img != null) {
+          Image image = FxUtil.convertToFxImage(img);
+          paneFrames.getChildren().add(new ImageView(image));
+        }
       }
     }
   }
 
-  @SneakyThrows
   public void onTreeChange(TreeData treeData) {
     String name = treeData.getName();
     if (name.endsWith(".bmd")) {

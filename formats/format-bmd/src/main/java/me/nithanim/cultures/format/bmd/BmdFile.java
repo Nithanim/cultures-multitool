@@ -2,9 +2,9 @@ package me.nithanim.cultures.format.bmd;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.io.IOException;
 import lombok.Value;
 import me.nithanim.cultures.format.bmd.RawBmdFileReader.BmdFrameInfo;
+import me.nithanim.cultures.format.bmd.RawBmdFileReader.BmdFrameRow;
 import me.nithanim.cultures.format.bmd.Test.Bitmap;
 
 @Value
@@ -15,94 +15,76 @@ public class BmdFile {
     return rawBmdFile.getFrameInfo().size();
   }
 
-  public BufferedImage get(int frame, byte[] palette) throws IOException {
-    int type = rawBmdFile.getFrameInfo().get(frame).getType();
-    Bitmap bmp;
-    switch (type) {
-      case 1:
-        bmp = extractFrameType1(rawBmdFile, rawBmdFile.getFrameInfo().get(frame), palette);
-        break;
-      case 2:
-        bmp = extractFrameType2(rawBmdFile, rawBmdFile.getFrameInfo().get(frame), palette);
-        break;
-      default:
-        throw new UnsupportedOperationException("Unknown bmp type " + type);
+  public BufferedImage getFrame(int frame, byte[] palette) throws BmdDecodeException {
+    try {
+      BmdFrameInfo frameInfo = rawBmdFile.getFrameInfo().get(frame);
+      if(frameInfo.getType() == 0) {
+        return null;
+      } else {
+        Bitmap bmp = extractFrame(rawBmdFile, frameInfo, palette);
+        return convertToImage(bmp);
+      }
+    } catch (Exception ex) {
+      throw new BmdDecodeException("Unable to decode frame " + frame, ex);
     }
-    return convertToImage(bmp);
   }
 
-  private Bitmap extractFrameType1(RawBmdFile bmdFile, BmdFrameInfo frameInfo, byte[] palette) {
+  private Bitmap extractFrame(RawBmdFile bmdFile, BmdFrameInfo frameInfo, byte[] palette) {
+    int frameType = frameInfo.getType();
+    if (frameType != 1 && frameType != 2 && frameType != 4) {
+      throw new UnsupportedOperationException("Frame type " + frameType + " is not supported!");
+    }
     int frameStart = frameInfo.getOff();
     int frameCount = frameInfo.getLen();
     int width = frameInfo.getWidth();
 
-    byte[] frameBuffer = bmdFile.getPixels();
-    int frameBufferIndex = bmdFile.getRowInfo().get(frameStart).getOffset();
+    byte[] pixels = bmdFile.getPixels();
+    int pixelPointer = bmdFile.getRowInfo().get(frameStart).getOffset();
 
     Bitmap bmp = new Bitmap(width, frameCount + 1);
 
     for (int row = 0; row < frameCount; row++) {
-      int indent = bmdFile.getRowInfo().get(row + frameStart).getIndent();
-      int i = 0;
-
-      while (i < indent) {
-        bmp.setPixel(i++, row, 0x00000000);
+      BmdFrameRow rowInfo = bmdFile.getRowInfo().get(row + frameStart);
+      if(isEmpty(rowInfo)) {
+        continue;
       }
+      int indent = rowInfo.getIndent();
+      int i = indent;
 
-      for (int head = frameBuffer[frameBufferIndex++];
-          head != 0;
-          head = frameBuffer[frameBufferIndex++] & 0xFF) {
-        if (head < 0x80) {
-          for (int j = 0; j < head; j++) {
-            bmp.setPixel(i++, row, getFromPalette(palette, frameBuffer[frameBufferIndex++] & 0xFF));
+      int pixelBlockLength = pixels[pixelPointer++] & 0xFF;
+
+      while (pixelBlockLength != 0) {
+        if (pixelBlockLength < 0x80) {
+          for (int z = 0; z < pixelBlockLength; z++) {
+            int color, alpha;
+            if (frameType == BmdFrameInfo.TYPE_EXTENDED) {
+              alpha = 0xFF;
+              color = getFromPalette(palette, pixels[pixelPointer++] & 0xFF);
+            } else if (frameType == BmdFrameInfo.TYPE_NORMAL) {
+              alpha = 0xFF;
+              color = getFromPalette(palette, pixels[pixelPointer++] & 0xFF);
+            } else if (frameType == BmdFrameInfo.TYPE_SHADOW) {
+              alpha = 0x80;
+              color = 0x000000;
+            } else {
+              alpha = 0xFF;
+              color = 0xFF0000;
+              // throw new IllegalArgumentException(String.valueOf(frameType));
+            }
+            bmp.setPixel(i++, row, color | (alpha << 3 * 8));
           }
+
         } else {
-          for (int j = 0; j < head - 0x80; j++) {
-            bmp.setPixel(i++, row, 0x00000000);
-          }
+          i += (pixelBlockLength - 0x80);
         }
-      }
-
-      while (i < width) {
-        bmp.setPixel(i++, row, 0x00000000);
+        pixelBlockLength = pixels[pixelPointer++] & 0xFF;
       }
     }
     return bmp;
   }
 
-  private Bitmap extractFrameType2(RawBmdFile bmdFile, BmdFrameInfo frameInfo, byte[] palette) {
-    int frameStart = frameInfo.getOff();
-    int frameCount = frameInfo.getLen();
-    int width = frameInfo.getWidth();
-
-    byte[] frameBuffer = bmdFile.getPixels();
-    int frameBufferIndex = bmdFile.getRowInfo().get(frameStart).getOffset();
-
-    Bitmap bmp = new Bitmap(width, frameCount + 1);
-
-    for (int row = 0; row < frameCount; row++) {
-      int indent = bmdFile.getRowInfo().get(row + frameStart).getIndent();
-      int i = 0;
-
-      while (i < indent) {
-        bmp.setPixel(i++, row, 0x00000000);
-      }
-
-      for (int head = frameBuffer[frameBufferIndex++];
-          head != 0;
-          head = frameBuffer[frameBufferIndex++] & 0xFF) {
-        if (head < 0x80) {
-          bmp.setPixel(i++, row, getFromPalette(palette, head));
-        } else {
-          i += head - 0x80;
-        }
-      }
-
-      while (i < width) {
-        bmp.setPixel(i++, row, 0x00000000);
-      }
-    }
-    return bmp;
+  private boolean isEmpty(BmdFrameRow rowInfo) {
+    return rowInfo.getOffset() == 0b00111111_11111111_11111111 && rowInfo.getIndent() == 0b00000011_11111111;
   }
 
   private int getFromPalette(byte[] palette, int idx) {
@@ -119,6 +101,10 @@ public class BmdFile {
   }
 
   private BufferedImage convertToImage(Bitmap bmp) {
+    if (bmp.getW() == 0 || bmp.getH() == 0) {
+      return new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+    }
+
     BufferedImage bu = new BufferedImage(bmp.getW(), bmp.getH(), BufferedImage.TYPE_INT_ARGB);
     WritableRaster r = bu.getRaster();
     for (int x = 0; x < bmp.getW(); x++) {

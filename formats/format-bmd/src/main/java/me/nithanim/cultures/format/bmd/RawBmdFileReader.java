@@ -96,6 +96,9 @@ public class RawBmdFileReader {
   @Value
   public static class BmdFrameInfo {
     public static final int SIZE = 6 * Integer.BYTES;
+    public static final int TYPE_NORMAL = 1;
+    public static final int TYPE_SHADOW = 2;
+    public static final int TYPE_EXTENDED = 4;
 
     int type;
     int meta1;

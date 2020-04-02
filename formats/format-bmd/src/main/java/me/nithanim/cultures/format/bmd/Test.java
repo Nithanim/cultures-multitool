@@ -11,13 +11,13 @@ import javax.imageio.ImageIO;
 import lombok.Value;
 
 public class Test {
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws IOException, BmdDecodeException {
     Path pathBmd =
         Paths.get(
-            "/mount/data/games/weltwunder/dosdevices/c:/GOG Games/8th Wonder of the World/data/engine2d/bin/bobs/ls_chest_s.bmd");
+            "/mount/data/games/weltwunder/dosdevices/c:/GOG Games/8th Wonder of the World/data/engine2d/bin/bobs/ls_ground_s.bmd");
     Path pathPcx =
         Paths.get(
-            "/mount/data/games/weltwunder/dosdevices/c:/GOG Games/8th Wonder of the World/data/engine2d/bin/palettes/creatures/cattle01.pcx");
+            "/mount/data/games/weltwunder/dosdevices/c:/GOG Games/8th Wonder of the World/data/engine2d/bin/palettes/landscapes/tree01.pcx");
 
     RawBmdFile rawBmd =
         new RawBmdFileReader()
@@ -29,8 +29,10 @@ public class Test {
     byte[] palette = generateRandomPalette();
 
     for (int i = 0; i < bmd.getSize(); i++) {
-      BufferedImage img = bmd.get(i, palette);
-      ImageIO.write(img, "PNG", Files.newOutputStream(Paths.get("/tmp/test" + i + ".png")));
+      BufferedImage img = bmd.getFrame(i, palette);
+      if(img != null) {
+        ImageIO.write(img, "PNG", Files.newOutputStream(Paths.get("/tmp/test" + i + ".png")));
+      }
     }
   }
 
