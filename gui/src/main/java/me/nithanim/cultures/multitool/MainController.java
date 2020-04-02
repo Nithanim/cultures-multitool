@@ -107,6 +107,10 @@ public class MainController implements Initializable {
         .addListener(
             (observable, oldValue, newValue) ->
                 onFileTreeSelectionChanged(newValue == null ? null : newValue.getValue()));
+    TreeItem<TreeData> root = fileTree.getRoot();
+    if (root != null) {
+      root.getChildren().forEach(c -> c.setExpanded(true));
+    }
   }
 
   private void onFileTreeSelectionChanged(TreeData value) {
