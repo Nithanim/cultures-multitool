@@ -59,6 +59,11 @@
       <artifactId>bmd</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+      <version>4.2.0</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -74,17 +79,18 @@
               <artifactId>lombok</artifactId>
               <version>1.18.12</version>
             </path>
+            <path>
+              <groupId>info.picocli</groupId>
+              <artifactId>picocli-codegen</artifactId>
+              <version>4.2.0</version>
+            </path>
           </annotationProcessorPaths>
+          <compilerArgs>
+            <!-- picocli -->
+            <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
-      <!--<plugin>
-        <groupId>org.openjfx</groupId>
-        <artifactId>javafx-maven-plugin</artifactId>
-        <version>0.0.4</version>
-        <configuration>
-          <mainClass>me.nithanim.cultures.multitool.Main</mainClass>
-        </configuration>
-      </plugin>-->
     </plugins>
   </build>
 </project>

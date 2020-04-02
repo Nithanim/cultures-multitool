@@ -57,14 +57,6 @@ public class MainController implements Initializable {
           openFile(p);
         });
     btnFileReload.setOnAction(ae -> openFile(Paths.get(tfFilePath.getText())));
-    try {
-      Path p =
-          Paths.get(
-              "/mount/data/games/weltwunder/dosdevices/c:/GOG Games/8th Wonder of the World/DataX/Libs/data0001.lib");
-      openFile(p);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-    }
 
     chbBmdView
         .selectedProperty()
@@ -88,7 +80,7 @@ public class MainController implements Initializable {
             });
   }
 
-  private void openFile(Path p) {
+  public void openFile(Path p) {
     try {
       fileTree.setRoot(null);
       onFileTreeSelectionChanged(null);

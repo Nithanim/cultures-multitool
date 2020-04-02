@@ -12,8 +12,10 @@ module culturestools.gui {
   requires culturestools.format.pcx;
   requires culturestools.format.bmd;
   requires java.desktop;
+  requires info.picocli;
 
   opens me.nithanim.cultures.multitool to
       javafx.fxml,
-      javafx.graphics;
+      javafx.graphics,
+      info.picocli;
 }
