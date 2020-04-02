@@ -5,7 +5,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -139,13 +143,21 @@ public class MainController implements Initializable {
   private TreeItem<TreeData> buildTree(String path, LibFileDirectory rootDir) {
     TreeItem<TreeData> rootItem = new TreeItem<>();
     rootItem.setGraphic(FontIcon.of(FontAwesomeRegular.FILE_ARCHIVE));
-    for (LibFileDirectory dir : rootDir.getDirectories().values()) {
+    Collection<LibFileDirectory> sortedDirectories =
+        rootDir.getDirectories().values().stream()
+            .sorted(Comparator.comparing(LibFileDirectory::getName))
+            .collect(Collectors.toList());
+    for (LibFileDirectory dir : sortedDirectories) {
       TreeItem<TreeData> sub = buildTree(path + "\\" + dir.getName(), dir);
       sub.setValue(new TreeData(true, path + "\\" + dir.getName(), dir.getName(), null, null));
       sub.setGraphic(FontIcon.of(FontAwesomeRegular.FOLDER));
       rootItem.getChildren().add(sub);
     }
-    for (LibFileFile file : rootDir.getFiles().values()) {
+    List<LibFileFile> sortedFiles =
+        rootDir.getFiles().values().stream()
+            .sorted(Comparator.comparing(LibFileFile::getName))
+            .collect(Collectors.toList());
+    for (LibFileFile file : sortedFiles) {
       TreeItem<TreeData> item = new TreeItem<>();
       item.setValue(
           new TreeData(
