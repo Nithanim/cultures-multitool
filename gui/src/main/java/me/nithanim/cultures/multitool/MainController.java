@@ -6,19 +6,17 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ResourceBundle;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import lombok.SneakyThrows;
 import lombok.Value;
 import me.nithanim.cultures.format.lib.io.reading.FileData;
@@ -30,22 +28,21 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 public class MainController implements Initializable {
   @FXML private MenuItem menuItemOpen;
-  @FXML private MenuItem menuItemBmdTool;
   @FXML private TreeView<TreeData> fileTree;
   @FXML private VBox viewerPane;
+  @FXML private CheckBox chbBmdView;
 
-  private Stage bmdToolStage;
+  private Parent bmdToolParent;
   private BmdToolController bmdToolController;
 
   @SneakyThrows
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
-    menuItemBmdTool.setOnAction(this::openBmdTool);
     menuItemOpen.setOnAction(
         ae -> {
           FileChooser fc = new FileChooser();
           File f = fc.showOpenDialog(fileTree.getScene().getWindow());
-          if(f == null) {
+          if (f == null) {
             return;
           }
           try {
@@ -64,6 +61,27 @@ public class MainController implements Initializable {
     } catch (Exception ex) {
       ex.printStackTrace();
     }
+
+    chbBmdView
+        .selectedProperty()
+        .addListener(
+            (observable, oldValue, newValue) -> {
+              TreeItem<TreeData> item = fileTree.getSelectionModel().getSelectedItem();
+              TreeData value = item == null ? null : item.getValue();
+              if (newValue) {
+                viewerPane.getChildren().clear();
+                if (bmdToolParent == null) {
+                  initBmdTool();
+                }
+                VBox.setVgrow(bmdToolParent, Priority.ALWAYS);
+                viewerPane.getChildren().add(bmdToolParent);
+                if (value != null) {
+                  bmdToolController.onTreeChange(value);
+                }
+              } else {
+                onFileTreeSelectionChanged(value);
+              }
+            });
   }
 
   private void readFile(Path p) throws IOException {
@@ -74,26 +92,28 @@ public class MainController implements Initializable {
     fileTree
         .getSelectionModel()
         .selectedItemProperty()
-        .addListener(this::onFileTreeSelectionChanged);
+        .addListener(
+            (observable, oldValue, newValue) ->
+                onFileTreeSelectionChanged(newValue == null ? null : newValue.getValue()));
   }
 
-  private void onFileTreeSelectionChanged(
-      ObservableValue<? extends TreeItem<TreeData>> observable,
-      TreeItem<TreeData> oldValue,
-      TreeItem<TreeData> newValue) {
-    if (newValue.getValue() != null) {
-      ItemHandler handler = newValue.getValue().getHandler();
-      viewerPane.getChildren().clear();
-      if (handler != null) {
-        try {
-          handler.display(viewerPane);
-        } catch (Exception ex) {
-          viewerPane.getChildren().clear();
-          viewerPane.getChildren().add(Util.makeTextAreaWithText(Util.exceptionToString(ex)));
+  private void onFileTreeSelectionChanged(TreeData value) {
+    if (value != null) {
+      if (chbBmdView.isSelected()) {
+        bmdToolController.onTreeChange(value);
+      } else {
+        ItemHandler handler = value.getHandler();
+        viewerPane.getChildren().clear();
+        if (handler != null) {
+          try {
+            handler.display(viewerPane);
+          } catch (Exception ex) {
+            viewerPane.getChildren().add(Util.makeTextAreaWithText(Util.exceptionToString(ex)));
+          }
         }
-      }
-      if (bmdToolController != null) {
-        bmdToolController.onTreeChange(newValue.getValue());
+        if (bmdToolController != null) {
+          bmdToolController.onTreeChange(value);
+        }
       }
     }
   }
@@ -123,20 +143,12 @@ public class MainController implements Initializable {
   }
 
   @SneakyThrows
-  private void openBmdTool(ActionEvent ae) {
-    if (bmdToolStage == null) {
-      FXMLLoader loader = new FXMLLoader(this.getClass().getResource("/fxml/bmdtool.fxml"));
-      bmdToolController = new BmdToolController();
-      loader.setController(bmdToolController);
-      loader.setClassLoader(this.getClass().getClassLoader());
-      Parent root = loader.load();
-      Scene scene = new Scene(root);
-      scene.getStylesheets().add(this.getClass().getResource("/styles/styles.css").toString());
-      bmdToolStage = new Stage();
-      bmdToolStage.setTitle("BmdTool - Cultures Multitool");
-      bmdToolStage.setScene(scene);
-    }
-    bmdToolStage.show();
+  private void initBmdTool() {
+    FXMLLoader loader = new FXMLLoader(this.getClass().getResource("/fxml/bmdtool.fxml"));
+    bmdToolController = new BmdToolController();
+    loader.setController(bmdToolController);
+    loader.setClassLoader(this.getClass().getClassLoader());
+    bmdToolParent = loader.load();
   }
 
   @Value
