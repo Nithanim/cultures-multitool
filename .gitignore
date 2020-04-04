@@ -2,6 +2,7 @@
 
 !/formats
 !/gui
+!/package
 !/.gitignore
 !/pom.xml
 !/LICENSE

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>package</artifactId>
+  <packaging>pom</packaging>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>Cultures Multitool Package</name>
+  <parent>
+    <groupId>me.nithanim.cultures.multitool</groupId>
+    <artifactId>root</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <dependencies>
+    <dependency>
+      <groupId>me.nithanim.cultures.multitool</groupId>
+      <artifactId>gui</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+  <profiles>
+    <profile>
+      <id>package</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.moditect</groupId>
+            <artifactId>moditect-maven-plugin</artifactId>
+            <version>1.0.0.Beta2</version>
+            <executions>
+              <execution>
+                <id>add-module-infos</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>add-module-info</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/modules</outputDirectory>
+                  <modules>
+                    <module>
+                      <artifact>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-buffer</artifactId>
+                        <version>4.1.45.Final</version>
+                      </artifact>
+                      <moduleInfoSource>
+                        module io.netty.buffer {
+                        exports io.netty.buffer;
+                        requires io.netty.common;
+                        }
+                      </moduleInfoSource>
+                    </module>
+                    <module>
+                      <artifact>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty-common</artifactId>
+                        <version>4.1.45.Final</version>
+                      </artifact>
+                      <moduleInfoSource>
+                        module io.netty.common {
+                        exports io.netty.util;
+                        }
+                      </moduleInfoSource>
+                    </module>
+                    <module>
+                      <artifact>
+                        <groupId>commons-io</groupId>
+                        <artifactId>commons-io</artifactId>
+                        <version>2.6</version>
+                      </artifact>
+                      <moduleInfoSource>
+                        module org.apache.commons.io {
+                        exports org.apache.commons.io;
+                        }
+                      </moduleInfoSource>
+                    </module>
+                    <module>
+                      <artifact>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-lang3</artifactId>
+                        <version>3.9</version>
+                      </artifact>
+                      <moduleInfoSource>
+                        module org.apache.commons.lang3 {
+                        exports org.apache.commons.lang3;
+                        exports org.apache.commons.lang3.arch;
+                        exports org.apache.commons.lang3.builder;
+                        exports org.apache.commons.lang3.concurrent;
+                        exports org.apache.commons.lang3.event;
+                        exports org.apache.commons.lang3.exception;
+                        exports org.apache.commons.lang3.math;
+                        exports org.apache.commons.lang3.mutable;
+                        exports org.apache.commons.lang3.reflect;
+                        exports org.apache.commons.lang3.text;
+                        exports org.apache.commons.lang3.text.translate;
+                        exports org.apache.commons.lang3.time;
+                        exports org.apache.commons.lang3.tuple;
+                        }
+                      </moduleInfoSource>
+                    </module>
+                  </modules>
+                </configuration>
+              </execution>
+              <execution>
+                <id>create-runtime-image</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>create-runtime-image</goal>
+                </goals>
+                <configuration>
+                  <modulePath>
+                    <path>${project.build.directory}/modules</path>
+                    <path>${project.build.directory}/lib</path>
+                  </modulePath>
+                  <modules>
+                    <module>culturestools.gui</module>
+                  </modules>
+                  <launcher>
+                    <name>CulturesMultitool</name>
+                    <module>culturestools.gui/me.nithanim.cultures.multitool.Main</module>
+                  </launcher>
+                  <outputDirectory>${project.build.directory}/jlink-image</outputDirectory>
+                  <compression>2</compression>
+                  <stripDebug>true</stripDebug>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-dependencies</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                  <overWriteReleases>false</overWriteReleases>
+                  <overWriteSnapshots>false</overWriteSnapshots>
+                  <overWriteIfNewer>true</overWriteIfNewer>
+                  <!-- <excludeArtifactIds>junit,hamcrest-core</excludeArtifactIds> -->
+                  <includeScope>compile</includeScope>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

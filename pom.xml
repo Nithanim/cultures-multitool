@@ -11,6 +11,7 @@
   <modules>
     <module>formats</module>
     <module>gui</module>
+    <module>package</module>
   </modules>
   <dependencyManagement>
     <dependencies>
@@ -18,7 +19,6 @@
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
         <version>1.18.12</version>
-        <!--<version>edge-SNAPSHOT</version>-->
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
@@ -32,10 +32,4 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-  <!--<repositories>
-    <repository>
-      <id>projectlombok.org</id>
-      <url>https://projectlombok.org/edge-releases</url>
-    </repository>
-  </repositories>-->
 </project>
