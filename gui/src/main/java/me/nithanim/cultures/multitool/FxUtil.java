@@ -1,9 +1,13 @@
 package me.nithanim.cultures.multitool;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.awt.image.SampleModel;
+import java.awt.image.SinglePixelPackedSampleModel;
+import java.awt.image.WritableRaster;
+import java.nio.IntBuffer;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.image.PixelWriter;
+import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile.LibFileFile;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeRegular;
@@ -11,19 +15,38 @@ import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 public class FxUtil {
-  public static Image convertToFxImage(BufferedImage image) {
-    WritableImage wr = null;
-    if (image != null) {
-      wr = new WritableImage(image.getWidth(), image.getHeight());
-      PixelWriter pw = wr.getPixelWriter();
-      for (int x = 0; x < image.getWidth(); x++) {
-        for (int y = 0; y < image.getHeight(); y++) {
-          pw.setArgb(x, y, image.getRGB(x, y));
-        }
-      }
+
+  public static Image convertToFxImage(BufferedImage bufferedImage) {
+    WritableImage writableImage =
+        new WritableImage(bufferedImage.getWidth(), bufferedImage.getHeight());
+    WritableRaster raster = bufferedImage.getRaster();
+    SampleModel sm = raster.getSampleModel();
+    int scanStride;
+    if (sm instanceof SinglePixelPackedSampleModel) {
+      scanStride = ((SinglePixelPackedSampleModel) sm).getScanlineStride();
+    } else {
+      scanStride = 0;
     }
 
-    return new ImageView(wr).getImage();
+    PixelFormat<IntBuffer> pixelFormat =
+        bufferedImage.isAlphaPremultiplied()
+            ? PixelFormat.getIntArgbPreInstance()
+            : PixelFormat.getIntArgbInstance();
+
+    int dataBufferOffset = raster.getDataBuffer().getOffset();
+    DataBufferInt db = (DataBufferInt) raster.getDataBuffer();
+    writableImage
+        .getPixelWriter()
+        .setPixels(
+            0,
+            0,
+            bufferedImage.getWidth(),
+            bufferedImage.getHeight(),
+            pixelFormat,
+            db.getData(),
+            dataBufferOffset,
+            scanStride);
+    return writableImage;
   }
 
   static FontIcon getIconForFile(LibFileFile file) {
