@@ -1,7 +1,6 @@
 package me.nithanim.cultures.format.bmd;
 
 import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
 import lombok.Value;
 import me.nithanim.cultures.format.bmd.RawBmdFileReader.BmdFrameInfo;
 import me.nithanim.cultures.format.bmd.RawBmdFileReader.BmdFrameRow;
@@ -29,6 +28,7 @@ public class BmdFile {
     }
   }
 
+  // TODO Speedup would be to decode the frame without palette to be able to change it dynamically
   private Bitmap extractFrame(RawBmdFile bmdFile, BmdFrameInfo frameInfo, byte[] palette) {
     int frameType = frameInfo.getType();
     if (frameType != 1 && frameType != 2 && frameType != 4) {
@@ -106,13 +106,7 @@ public class BmdFile {
     }
 
     BufferedImage bu = new BufferedImage(bmp.getW(), bmp.getH(), BufferedImage.TYPE_INT_ARGB);
-    WritableRaster r = bu.getRaster();
-    for (int x = 0; x < bmp.getW(); x++) {
-      for (int y = 0; y < bmp.getH(); y++) {
-        int c = bmp.getPixel(x, y);
-        bu.setRGB(x, y, c);
-      }
-    }
+    bu.getRaster().setDataElements(0, 0, bmp.getW(), bmp.getH(), bmp.getColors());
     return bu;
   }
 }
