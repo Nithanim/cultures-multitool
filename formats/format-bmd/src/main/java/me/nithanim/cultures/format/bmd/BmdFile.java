@@ -89,9 +89,9 @@ public class BmdFile {
 
   private int getFromPalette(byte[] palette, int idx) {
     int pointer = idx * 3;
-    byte r = palette[pointer];
-    byte g = palette[pointer + 1];
-    byte b = palette[pointer + 2];
+    int r = palette[pointer] & 0xFF;
+    int g = palette[pointer + 1] & 0xFF;
+    int b = palette[pointer + 2] & 0xFF;
 
     int color = 0xFF000000;
     color |= r << 8 * 2;
