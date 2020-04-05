@@ -2,14 +2,19 @@ package me.nithanim.cultures.multitool;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -22,6 +27,7 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import lombok.SneakyThrows;
 import lombok.Value;
@@ -36,6 +42,7 @@ public class MainController implements Initializable {
   @FXML private Button btnFileReload;
   @FXML private TextField tfFilePath;
   @FXML private MenuItem menuItemOpen;
+  @FXML private MenuItem menuItemExtractAll;
   @FXML private TreeView<TreeData> fileTree;
   @FXML private VBox viewerPane;
   @FXML private CheckBox chbBmdView;
@@ -78,6 +85,8 @@ public class MainController implements Initializable {
                 onFileTreeSelectionChanged(value);
               }
             });
+
+    menuItemExtractAll.setOnAction(this::extractAllAction);
   }
 
   public void openFile(Path p) {
@@ -173,8 +182,44 @@ public class MainController implements Initializable {
     bmdToolParent = loader.load();
   }
 
+  @SneakyThrows
+  private void extractAllAction(ActionEvent ae) {
+    if (fileTree.getRoot() == null) {
+      return;
+    }
+    DirectoryChooser ds = new DirectoryChooser();
+    File f = ds.showDialog(fileTree.getScene().getWindow());
+    if (f == null) {
+      return;
+    }
+    Path p = f.toPath();
+    extractAllAction(fileTree.getRoot(), p);
+  }
+
+  private void extractAllAction(TreeItem<TreeData> item, Path p) throws IOException {
+    TreeData v = item.getValue();
+    Path n = v == null ? p : p.resolve(v.getName());
+    if (v == null || v.isDir()) {
+      if (!Files.exists(n)) {
+        Files.createDirectory(n);
+      }
+      for (TreeItem<TreeData> child : item.getChildren()) {
+        extractAllAction(child, n);
+      }
+    } else {
+      try (OutputStream out =
+          Files.newOutputStream(
+              n, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+        try (InputStream in = v.getData().getInputStream()) {
+          in.transferTo(out);
+        }
+      }
+    }
+  }
+
   @Value
   static class TreeData {
+
     boolean isDir;
     String fullPath;
     String name;
