@@ -58,8 +58,10 @@ public class BmdFile {
           for (int z = 0; z < pixelBlockLength; z++) {
             int color, alpha;
             if (frameType == BmdFrameInfo.TYPE_EXTENDED) {
+              int colorIndex = pixels[pixelPointer++] & 0xFF;
+              int pixelLevel = pixels[pixelPointer++] & 0xFF;
+              color = getFromPalette(palette, colorIndex);
               alpha = 0xFF;
-              color = getFromPalette(palette, pixels[pixelPointer++] & 0xFF);
             } else if (frameType == BmdFrameInfo.TYPE_NORMAL) {
               alpha = 0xFF;
               color = getFromPalette(palette, pixels[pixelPointer++] & 0xFF);
