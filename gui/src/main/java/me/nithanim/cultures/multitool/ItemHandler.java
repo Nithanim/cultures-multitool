@@ -74,5 +74,4 @@ interface ItemHandler {
       pane.getChildren().add(Util.makeTextAreaWithText(exceptionToString(ex)));
     }
   }
-
 }

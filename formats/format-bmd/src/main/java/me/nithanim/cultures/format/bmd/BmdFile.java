@@ -17,7 +17,7 @@ public class BmdFile {
   public BufferedImage getFrame(int frame, byte[] palette) throws BmdDecodeException {
     try {
       BmdFrameInfo frameInfo = rawBmdFile.getFrameInfo().get(frame);
-      if(frameInfo.getType() == 0) {
+      if (frameInfo.getType() == 0) {
         return null;
       } else {
         Bitmap bmp = extractFrame(rawBmdFile, frameInfo, palette);
@@ -45,7 +45,7 @@ public class BmdFile {
 
     for (int row = 0; row < frameCount; row++) {
       BmdFrameRow rowInfo = bmdFile.getRowInfo().get(row + frameStart);
-      if(isEmpty(rowInfo)) {
+      if (isEmpty(rowInfo)) {
         continue;
       }
       int indent = rowInfo.getIndent();
@@ -86,7 +86,8 @@ public class BmdFile {
   }
 
   private boolean isEmpty(BmdFrameRow rowInfo) {
-    return rowInfo.getOffset() == 0b00111111_11111111_11111111 && rowInfo.getIndent() == 0b00000011_11111111;
+    return rowInfo.getOffset() == 0b00111111_11111111_11111111
+        && rowInfo.getIndent() == 0b00000011_11111111;
   }
 
   private int getFromPalette(byte[] palette, int idx) {
