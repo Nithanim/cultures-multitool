@@ -10,15 +10,18 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
+import javafx.util.Duration;
 import lombok.SneakyThrows;
 import me.nithanim.cultures.format.bmd.BmdDecodeException;
 import me.nithanim.cultures.format.bmd.BmdFile;
 import me.nithanim.cultures.format.bmd.LittleEndianDataInputStream;
 import me.nithanim.cultures.format.bmd.RawBmdFile;
 import me.nithanim.cultures.format.bmd.RawBmdFileReader;
+import me.nithanim.cultures.format.bmd.RawBmdFileReader.BmdFrameInfo;
 import me.nithanim.cultures.format.pcx.PcxFile;
 import me.nithanim.cultures.format.pcx.PcxFileReader;
 import me.nithanim.cultures.multitool.MainController.TreeData;
@@ -57,10 +60,36 @@ public class BmdToolController implements Initializable {
         BufferedImage img = bmdFile.getFrame(i, pcxFile.getPalette());
         if (img != null) {
           Image image = FxUtil.convertToFxImage(img);
-          paneFrames.getChildren().add(new ImageView(image));
+          ImageView imageView = new ImageView(image);
+          setTooltipCreator(i, imageView);
+          paneFrames.getChildren().add(imageView);
         }
       }
     }
+  }
+
+  private void setTooltipCreator(int i, ImageView imageView) {
+    imageView.setOnMouseEntered(
+        me -> {
+          Tooltip.install(
+              imageView, createTooltip(i, bmdFile.getRawBmdFile().getFrameInfo().get(i)));
+          imageView.setOnMouseEntered(null);
+        });
+  }
+
+  private Tooltip createTooltip(int id, BmdFrameInfo frameInfo) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("#").append(id).append("\n");
+    sb.append("Type: ").append(frameInfo.getType()).append("\n");
+    sb.append("Meta1: ").append(frameInfo.getMeta1()).append("\n");
+    sb.append("Meta2: ").append(frameInfo.getMeta1()).append("\n");
+    sb.append("Width: ").append(frameInfo.getWidth()).append("\n");
+    sb.append("Len: ").append(frameInfo.getLen()).append("\n");
+    sb.append("Off: ").append(frameInfo.getOff());
+    Tooltip tooltip = new Tooltip(sb.toString());
+    tooltip.setShowDelay(Duration.ZERO);
+    tooltip.setShowDuration(Duration.hours(1));
+    return tooltip;
   }
 
   public void onTreeChange(TreeData treeData) {
