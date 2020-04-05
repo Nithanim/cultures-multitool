@@ -4,6 +4,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import lombok.Value;
 
@@ -11,10 +12,14 @@ public class RawBmdFileReader {
   public RawBmdFile read(InputStream ist) throws IOException {
     LittleEndianDataInputStream in = new LittleEndianDataInputStream(ist);
     BmdHeader header = readBmdHeader(in);
-    List<BmdFrameInfo> frameInfo = readFramesSection(in);
-    byte[] pixels = readPixelsSection(in);
-    List<BmdFrameRow> rowInfo = readRowsSection(in);
-    return new RawBmdFile(header, frameInfo, pixels, rowInfo);
+    if (header.getNumFrames() == 0 && header.getNumPixels() == 0 && header.getNumRows() == 0) {
+      return new RawBmdFile(header, Collections.emptyList(), new byte[0], Collections.emptyList());
+    } else {
+      List<BmdFrameInfo> frameInfo = readFramesSection(in);
+      byte[] pixels = readPixelsSection(in);
+      List<BmdFrameRow> rowInfo = readRowsSection(in);
+      return new RawBmdFile(header, frameInfo, pixels, rowInfo);
+    }
   }
 
   private List<BmdFrameRow> readRowsSection(LittleEndianDataInputStream in) throws IOException {
