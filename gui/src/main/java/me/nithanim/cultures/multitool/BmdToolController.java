@@ -81,8 +81,8 @@ public class BmdToolController implements Initializable {
     StringBuilder sb = new StringBuilder();
     sb.append("#").append(id).append("\n");
     sb.append("Type: ").append(frameInfo.getType()).append("\n");
-    sb.append("Meta1: ").append(frameInfo.getMeta1()).append("\n");
-    sb.append("Meta2: ").append(frameInfo.getMeta1()).append("\n");
+    sb.append("dx: ").append(frameInfo.getDx()).append("\n");
+    sb.append("dy: ").append(frameInfo.getDy()).append("\n");
     sb.append("Width: ").append(frameInfo.getWidth()).append("\n");
     sb.append("Len: ").append(frameInfo.getLen()).append("\n");
     sb.append("Off: ").append(frameInfo.getOff());

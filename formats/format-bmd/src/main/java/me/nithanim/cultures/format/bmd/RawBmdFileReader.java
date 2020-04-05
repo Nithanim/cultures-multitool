@@ -106,8 +106,8 @@ public class RawBmdFileReader {
     public static final int TYPE_EXTENDED = 4;
 
     int type;
-    int meta1;
-    int meta2;
+    int dx;
+    int dy;
     int width;
     int len;
     int off;
