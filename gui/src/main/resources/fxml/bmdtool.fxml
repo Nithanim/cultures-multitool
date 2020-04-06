@@ -12,7 +12,6 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-
 <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <top>
       <VBox BorderPane.alignment="CENTER">
@@ -31,9 +30,9 @@
                   <HBox>
                      <children>
                         <CheckBox fx:id="chbBmdSync" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" selected="true" text="Sync with tree">
-                           <padding>
-                              <Insets left="5.0" right="5.0" />
-                           </padding>
+                           <HBox.margin>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </HBox.margin>
                         </CheckBox>
                         <Button fx:id="btnBmdOpen" disable="true" mnemonicParsing="false" text="Open">
                            <HBox.margin>
@@ -88,7 +87,27 @@
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                </VBox.margin>
             </Label>
-            <ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+            <Label fx:id="lblFrameStats" text="--Frame stats--" wrapText="true" VBox.vgrow="ALWAYS">
+               <VBox.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </VBox.margin></Label>
+            <HBox>
+               <children>
+                  <CheckBox fx:id="chbFrameSelection" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Render only frame">
+                     <padding>
+                        <Insets left="5.0" right="5.0" />
+                     </padding>
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+                  </CheckBox>
+                  <TextField fx:id="tfFrameSelection" disable="true" prefHeight="26.0" prefWidth="44.0">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin></TextField>
+               </children>
+            </HBox>
+            <ScrollPane fitToHeight="true" fitToWidth="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="SOMETIMES">
                <content>
                   <FlowPane fx:id="paneFrames" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
                </content>
