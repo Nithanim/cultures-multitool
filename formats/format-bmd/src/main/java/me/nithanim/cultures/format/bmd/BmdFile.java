@@ -58,10 +58,8 @@ public class BmdFile {
           for (int z = 0; z < pixelBlockLength; z++) {
             int color, alpha;
             if (frameType == BmdFrameInfo.TYPE_EXTENDED) {
-              int colorIndex = pixels[pixelPointer++] & 0xFF;
-              int pixelLevel = pixels[pixelPointer++] & 0xFF;
-              color = getFromPalette(palette, colorIndex);
-              alpha = 0xFF;
+              color = getFromPalette(palette, pixels[pixelPointer++] & 0xFF);
+              alpha = pixels[pixelPointer++] & 0xFF;
             } else if (frameType == BmdFrameInfo.TYPE_NORMAL) {
               alpha = 0xFF;
               color = getFromPalette(palette, pixels[pixelPointer++] & 0xFF);
@@ -71,7 +69,6 @@ public class BmdFile {
             } else {
               alpha = 0xFF;
               color = 0xFF0000;
-              // throw new IllegalArgumentException(String.valueOf(frameType));
             }
             bmp.setPixel(i++, row, color | (alpha << 3 * 8));
           }
@@ -96,7 +93,7 @@ public class BmdFile {
     int g = palette[pointer + 1] & 0xFF;
     int b = palette[pointer + 2] & 0xFF;
 
-    int color = 0xFF000000;
+    int color = 0x00000000;
     color |= r << 8 * 2;
     color |= g << 8 * 1;
     color |= b << 8 * 0;
