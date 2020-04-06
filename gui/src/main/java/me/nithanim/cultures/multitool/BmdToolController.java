@@ -123,9 +123,13 @@ public class BmdToolController implements Initializable {
   }
 
   private int getUserSelectedFrame() {
-    try {
-      return Integer.parseInt(tfFrameSelection.getText());
-    } catch (NumberFormatException ex) {
+    if (chbFrameSelection.isSelected()) {
+      try {
+        return Integer.parseInt(tfFrameSelection.getText());
+      } catch (NumberFormatException ex) {
+        return -1;
+      }
+    } else {
       return -1;
     }
   }
