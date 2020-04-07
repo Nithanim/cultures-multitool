@@ -16,16 +16,13 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -47,12 +44,11 @@ public class MainController implements Initializable {
   @FXML private VBox viewerPane;
   @FXML private CheckBox chbBmdView;
 
-  private Parent bmdToolParent;
-  private BmdToolController bmdToolController;
-
   @SneakyThrows
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
+    new ViewerSideController(
+        viewerPane, fileTree.getSelectionModel().selectedItemProperty(), chbBmdView);
     menuItemOpen.setOnAction(
         ae -> {
           FileChooser fc = new FileChooser();
@@ -65,34 +61,12 @@ public class MainController implements Initializable {
         });
     btnFileReload.setOnAction(ae -> openFile(Paths.get(tfFilePath.getText())));
 
-    chbBmdView
-        .selectedProperty()
-        .addListener(
-            (observable, oldValue, newValue) -> {
-              TreeItem<TreeData> item = fileTree.getSelectionModel().getSelectedItem();
-              TreeData value = item == null ? null : item.getValue();
-              if (newValue) {
-                viewerPane.getChildren().clear();
-                if (bmdToolParent == null) {
-                  initBmdTool();
-                }
-                VBox.setVgrow(bmdToolParent, Priority.ALWAYS);
-                viewerPane.getChildren().add(bmdToolParent);
-                if (value != null) {
-                  bmdToolController.onTreeChange(value);
-                }
-              } else {
-                onFileTreeSelectionChanged(value);
-              }
-            });
-
     menuItemExtractAll.setOnAction(this::extractAllAction);
   }
 
   public void openFile(Path p) {
     try {
       fileTree.setRoot(null);
-      onFileTreeSelectionChanged(null);
       readAndUseFile(p);
       tfFilePath.setText(p.toString());
     } catch (Exception ex) {
@@ -106,38 +80,9 @@ public class MainController implements Initializable {
 
     fileTree.setShowRoot(false);
     fileTree.setRoot(buildTree("", lib.getRoot()));
-    fileTree
-        .getSelectionModel()
-        .selectedItemProperty()
-        .addListener(
-            (observable, oldValue, newValue) ->
-                onFileTreeSelectionChanged(newValue == null ? null : newValue.getValue()));
     TreeItem<TreeData> root = fileTree.getRoot();
     if (root != null) {
       root.getChildren().forEach(c -> c.setExpanded(true));
-    }
-  }
-
-  private void onFileTreeSelectionChanged(TreeData value) {
-    if (value != null) {
-      if (chbBmdView.isSelected()) {
-        bmdToolController.onTreeChange(value);
-      } else {
-        ItemHandler handler = value.getHandler();
-        viewerPane.getChildren().clear();
-        if (handler != null) {
-          try {
-            handler.display(viewerPane);
-          } catch (Exception ex) {
-            viewerPane.getChildren().add(Util.makeTextAreaWithText(Util.exceptionToString(ex)));
-          }
-        }
-        if (bmdToolController != null) {
-          bmdToolController.onTreeChange(value);
-        }
-      }
-    } else {
-      viewerPane.getChildren().clear();
     }
   }
 
@@ -171,15 +116,6 @@ public class MainController implements Initializable {
       rootItem.getChildren().add(item);
     }
     return rootItem;
-  }
-
-  @SneakyThrows
-  private void initBmdTool() {
-    FXMLLoader loader = new FXMLLoader(this.getClass().getResource("/fxml/bmdtool.fxml"));
-    bmdToolController = new BmdToolController();
-    loader.setController(bmdToolController);
-    loader.setClassLoader(this.getClass().getClassLoader());
-    bmdToolParent = loader.load();
   }
 
   @SneakyThrows
