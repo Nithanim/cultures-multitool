@@ -37,44 +37,62 @@ public class ViewerSideController {
             (observable, oldValue, newValue) -> {
               TreeItem<TreeData> item = treeSelectedItem.get();
               TreeData value = item == null ? null : item.getValue();
-              if (newValue) {
-                viewerPane.getChildren().clear();
-                if (bmdToolParent == null) {
-                  initBmdTool();
-                }
-                VBox.setVgrow(bmdToolParent, Priority.ALWAYS);
-                viewerPane.getChildren().add(bmdToolParent);
-                if (value != null) {
-                  bmdToolController.onTreeChange(value);
-                }
-              } else {
-                onFileTreeSelectionChanged(value);
-              }
+              handle(value);
             });
 
     treeSelectedItem.addListener(
-        (observable, oldValue, newValue) ->
-            onFileTreeSelectionChanged(newValue == null ? null : newValue.getValue()));
+        (observable, oldValue, newValue) -> handle(newValue == null ? null : newValue.getValue()));
   }
 
-  private void onFileTreeSelectionChanged(TreeData value) {
-    if (value != null) {
-      if (chbBmdView.isSelected()) {
-        bmdToolController.onTreeChange(value);
-      } else {
-        viewerPane.getChildren().clear();
-        try {
-          handle(viewerPane, value);
-        } catch (Exception ex) {
-          viewerPane.getChildren().add(Util.makeTextAreaWithText(Util.exceptionToString(ex)));
-        }
-        if (bmdToolController != null) {
-          bmdToolController.onTreeChange(value);
-        }
-      }
-    } else {
+  private void handle(TreeData value) {
+    try {
+      _handle(viewerPane, value);
+    } catch (Exception ex) {
       viewerPane.getChildren().clear();
+      viewerPane.getChildren().add(Util.makeTextAreaWithText(Util.exceptionToString(ex)));
     }
+  }
+
+  public void _handle(VBox pane, TreeData file) throws IOException {
+    if (file == null) {
+      pane.getChildren().clear();
+      return;
+    }
+    boolean newBmdOpen = false;
+    if (file.getName().endsWith(".txt") || file.getName().endsWith(".hlt")) {
+      pane.getChildren().clear();
+      ViewerSideHandlers.handleTxt(file, pane);
+    } else if (file.getName().endsWith(".cif")) {
+      pane.getChildren().clear();
+      ViewerSideHandlers.handleCif(file, pane);
+    } else if (file.getName().endsWith(".bmp")) {
+      pane.getChildren().clear();
+      ViewerSideHandlers.handleBmp(file, pane);
+    } else if (file.getName().endsWith(".pcx")) {
+      if (!chbBmdView.isSelected()) {
+        pane.getChildren().clear();
+        ViewerSideHandlers.handlePcx(file, pane);
+      } else {
+        if (!bmdOpen) {
+          showBmdTool(pane);
+        }
+        newBmdOpen = true;
+      }
+      bmdToolController.onTreeChange(file);
+    } else if (file.getName().endsWith(".bmd")) {
+      if (!bmdOpen) {
+        showBmdTool(pane);
+      }
+      newBmdOpen = true;
+      bmdToolController.onTreeChange(file);
+    }
+    bmdOpen = newBmdOpen;
+  }
+
+  private void showBmdTool(VBox viewerPane) {
+    viewerPane.getChildren().clear();
+    VBox.setVgrow(bmdToolParent, Priority.ALWAYS);
+    viewerPane.getChildren().add(bmdToolParent);
   }
 
   @SneakyThrows
@@ -84,19 +102,5 @@ public class ViewerSideController {
     loader.setController(bmdToolController);
     loader.setClassLoader(this.getClass().getClassLoader());
     bmdToolParent = loader.load();
-  }
-
-  public void handle(VBox pane, TreeData file) throws IOException {
-    if (file.getName().endsWith(".txt") || file.getName().endsWith(".hlt")) {
-      ViewerSideHandlers.handleTxt(file, pane);
-    } else if (file.getName().endsWith(".cif")) {
-      ViewerSideHandlers.handleCif(file, pane);
-    } else if (file.getName().endsWith(".bmp")) {
-      ViewerSideHandlers.handleBmp(file, pane);
-    } else if (file.getName().endsWith(".pcx")) {
-      ViewerSideHandlers.handlePcx(file, pane);
-    } else {
-      return;
-    }
   }
 }
