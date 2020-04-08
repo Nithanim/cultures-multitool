@@ -57,14 +57,14 @@ public class BmdToolController implements Initializable {
   @SneakyThrows
   private void setBmd(TreeData treeData) {
     tfBmdPath.setText(treeData.getFullPath());
-    bmdFile = readBmd(treeData.getData().getInputStream());
+    bmdFile = readBmd(treeData.getData().get());
     onFileSelectionChanged();
   }
 
   @SneakyThrows
   private void setPcx(TreeData treeData) {
     tfPcxPath.setText(treeData.getFullPath());
-    pcxFile = new PcxFileReader().read(treeData.getData().getInputStream());
+    pcxFile = new PcxFileReader().read(treeData.getData().get());
     onFileSelectionChanged();
   }
 

@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -28,7 +29,6 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import lombok.SneakyThrows;
 import lombok.Value;
-import me.nithanim.cultures.format.lib.io.reading.FileData;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile.LibFileDirectory;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile.LibFileFile;
@@ -95,7 +95,7 @@ public class MainController implements Initializable {
             .collect(Collectors.toList());
     for (LibFileDirectory dir : sortedDirectories) {
       TreeItem<TreeData> sub = buildTree(path + "\\" + dir.getName(), dir);
-      sub.setValue(new TreeData(true, path + "\\" + dir.getName(), dir.getName(), null, null));
+      sub.setValue(new TreeData(true, path + "\\" + dir.getName(), dir.getName(), null));
       sub.setGraphic(FontIcon.of(FontAwesomeRegular.FOLDER));
       rootItem.getChildren().add(sub);
     }
@@ -110,8 +110,13 @@ public class MainController implements Initializable {
               false,
               path + "\\" + file.getName(),
               file.getName(),
-              file.getData(),
-              ItemHandler.of(file)));
+              new Supplier<InputStream>() {
+                @Override
+                @SneakyThrows
+                public InputStream get() {
+                  return file.getData().getInputStream();
+                }
+              }));
       item.setGraphic(FxUtil.getIconForFile(file));
       rootItem.getChildren().add(item);
     }
@@ -146,7 +151,7 @@ public class MainController implements Initializable {
       try (OutputStream out =
           Files.newOutputStream(
               n, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
-        try (InputStream in = v.getData().getInputStream()) {
+        try (InputStream in = v.getData().get()) {
           in.transferTo(out);
         }
       }
@@ -159,8 +164,7 @@ public class MainController implements Initializable {
     boolean isDir;
     String fullPath;
     String name;
-    FileData data;
-    ItemHandler handler;
+    Supplier<InputStream> data;
 
     @Override
     public String toString() {

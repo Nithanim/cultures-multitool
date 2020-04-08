@@ -1,5 +1,6 @@
 package me.nithanim.cultures.multitool;
 
+import java.io.IOException;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -18,6 +19,8 @@ public class ViewerSideController {
 
   private CheckBox chbBmdView;
   private ReadOnlyObjectProperty<TreeItem<TreeData>> treeSelectedItem;
+
+  private boolean bmdOpen = false;
 
   public ViewerSideController(
       VBox viewerPane,
@@ -59,14 +62,11 @@ public class ViewerSideController {
       if (chbBmdView.isSelected()) {
         bmdToolController.onTreeChange(value);
       } else {
-        ItemHandler handler = value.getHandler();
         viewerPane.getChildren().clear();
-        if (handler != null) {
-          try {
-            handler.display(viewerPane);
-          } catch (Exception ex) {
-            viewerPane.getChildren().add(Util.makeTextAreaWithText(Util.exceptionToString(ex)));
-          }
+        try {
+          handle(viewerPane, value);
+        } catch (Exception ex) {
+          viewerPane.getChildren().add(Util.makeTextAreaWithText(Util.exceptionToString(ex)));
         }
         if (bmdToolController != null) {
           bmdToolController.onTreeChange(value);
@@ -84,5 +84,19 @@ public class ViewerSideController {
     loader.setController(bmdToolController);
     loader.setClassLoader(this.getClass().getClassLoader());
     bmdToolParent = loader.load();
+  }
+
+  public void handle(VBox pane, TreeData file) throws IOException {
+    if (file.getName().endsWith(".txt") || file.getName().endsWith(".hlt")) {
+      ViewerSideHandlers.handleTxt(file, pane);
+    } else if (file.getName().endsWith(".cif")) {
+      ViewerSideHandlers.handleCif(file, pane);
+    } else if (file.getName().endsWith(".bmp")) {
+      ViewerSideHandlers.handleBmp(file, pane);
+    } else if (file.getName().endsWith(".pcx")) {
+      ViewerSideHandlers.handlePcx(file, pane);
+    } else {
+      return;
+    }
   }
 }
