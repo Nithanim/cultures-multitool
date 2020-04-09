@@ -2,22 +2,33 @@ package me.nithanim.cultures.multitool.viewer;
 
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Side;
+import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.layout.FlowPane;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Duration;
+import javax.imageio.ImageIO;
 import lombok.SneakyThrows;
 import me.nithanim.cultures.format.bmd.BmdDecodeException;
 import me.nithanim.cultures.format.bmd.BmdFile;
@@ -42,6 +53,8 @@ public class BmdToolController implements Initializable {
 
   private BmdFile bmdFile;
   private PcxFile pcxFile;
+  private ContextMenu contextMenu;
+  private Map<ImageView, BufferedImage> imageMap = new HashMap<>();
 
   @Override
   public void initialize(URL location, ResourceBundle resources) {
@@ -53,6 +66,32 @@ public class BmdToolController implements Initializable {
               updateFrames();
             });
     tfFrameSelection.textProperty().addListener(observable -> updateFrames());
+
+    contextMenu = new ContextMenu();
+    MenuItem menuItem1 = new MenuItem("Export as ...");
+    menuItem1.setOnAction(
+        ae -> {
+          Node source = getContextMenuSourceNode(ae);
+          if (source instanceof ImageView) {
+            exportImage((ImageView) source);
+          }
+        });
+    contextMenu.getItems().add(menuItem1);
+  }
+
+  @SneakyThrows
+  private void exportImage(ImageView source) {
+    BufferedImage img = imageMap.get(source);
+    FileChooser fc = new FileChooser();
+    fc.getExtensionFilters().add(new ExtensionFilter("PNG Image", "*.png"));
+    fc.setSelectedExtensionFilter(fc.getExtensionFilters().get(0));
+    File target = fc.showSaveDialog(paneFrames.getScene().getWindow());
+    if (target != null) {
+      if (!target.getName().endsWith(".png")) {
+        target = new File(target.getParent(), target.getName() + ".png");
+      }
+      ImageIO.write(img, "png", target);
+    }
   }
 
   @SneakyThrows
@@ -100,6 +139,7 @@ public class BmdToolController implements Initializable {
   @SneakyThrows
   private void updateFrames() {
     if (bmdFile != null && pcxFile != null) {
+      imageMap.clear();
       paneFrames.getChildren().clear();
       int start = getRenderingStartFrame();
       int end = getRenderingEndFrame();
@@ -141,8 +181,14 @@ public class BmdToolController implements Initializable {
       Image image = FxUtil.convertToFxImage(img);
       ImageView imageView = new ImageView(image);
       setTooltipCreator(i, imageView);
+      imageView.setOnContextMenuRequested(this::showContextMenu);
       paneFrames.getChildren().add(imageView);
+      imageMap.put(imageView, img);
     }
+  }
+
+  private void showContextMenu(ContextMenuEvent cme) {
+    contextMenu.show((Node) cme.getSource(), Side.BOTTOM, 0, 0);
   }
 
   private void setTooltipCreator(int i, ImageView imageView) {
@@ -187,5 +233,17 @@ public class BmdToolController implements Initializable {
     RawBmdFile rawBmd =
         new RawBmdFileReader().read(new DataInputStream(new LittleEndianDataInputStream(in)));
     return new BmdFile(rawBmd);
+  }
+
+  private Node getContextMenuSourceNode(ActionEvent ae) {
+    MenuItem source = (MenuItem) ae.getTarget();
+    ContextMenu popup = source.getParentPopup();
+    if (popup != null) {
+      Node ownerNode = popup.getOwnerNode();
+      if (ownerNode instanceof ImageView) {
+        return ownerNode;
+      }
+    }
+    return null;
   }
 }
