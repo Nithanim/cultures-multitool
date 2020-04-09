@@ -15,7 +15,7 @@ public class Util {
     return baos.toString();
   }
 
-  static TextArea makeTextAreaWithText(String text) {
+  public static TextArea makeTextAreaWithText(String text) {
     TextArea textArea = new TextArea();
     textArea.setEditable(false);
     textArea.setText(text);

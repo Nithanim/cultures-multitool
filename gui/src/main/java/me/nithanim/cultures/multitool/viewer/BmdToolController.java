@@ -1,4 +1,4 @@
-package me.nithanim.cultures.multitool;
+package me.nithanim.cultures.multitool.viewer;
 
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
@@ -27,7 +27,8 @@ import me.nithanim.cultures.format.bmd.RawBmdFileReader;
 import me.nithanim.cultures.format.bmd.RawBmdFileReader.BmdFrameInfo;
 import me.nithanim.cultures.format.pcx.PcxFile;
 import me.nithanim.cultures.format.pcx.PcxFileReader;
-import me.nithanim.cultures.multitool.MainController.TreeData;
+import me.nithanim.cultures.multitool.FxUtil;
+import me.nithanim.cultures.multitool.TreeData;
 
 public class BmdToolController implements Initializable {
   @FXML private TextField tfBmdPath;

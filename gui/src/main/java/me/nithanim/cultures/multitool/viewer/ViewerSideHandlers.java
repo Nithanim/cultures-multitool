@@ -1,4 +1,4 @@
-package me.nithanim.cultures.multitool;
+package me.nithanim.cultures.multitool.viewer;
 
 import static me.nithanim.cultures.multitool.Util.exceptionToString;
 
@@ -14,7 +14,9 @@ import me.nithanim.cultures.format.cif.CifFileUtil;
 import me.nithanim.cultures.format.pcx.PcxFile;
 import me.nithanim.cultures.format.pcx.PcxFileReader;
 import me.nithanim.cultures.format.pcx.PcxUtil;
-import me.nithanim.cultures.multitool.MainController.TreeData;
+import me.nithanim.cultures.multitool.FxUtil;
+import me.nithanim.cultures.multitool.TreeData;
+import me.nithanim.cultures.multitool.Util;
 import org.apache.commons.io.IOUtils;
 
 public class ViewerSideHandlers {

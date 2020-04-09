@@ -28,10 +28,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import lombok.SneakyThrows;
-import lombok.Value;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile.LibFileDirectory;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile.LibFileFile;
+import me.nithanim.cultures.multitool.viewer.ViewerSideController;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeRegular;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -155,20 +155,6 @@ public class MainController implements Initializable {
           in.transferTo(out);
         }
       }
-    }
-  }
-
-  @Value
-  static class TreeData {
-
-    boolean isDir;
-    String fullPath;
-    String name;
-    Supplier<InputStream> data;
-
-    @Override
-    public String toString() {
-      return name;
     }
   }
 }

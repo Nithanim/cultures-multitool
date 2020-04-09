@@ -18,4 +18,6 @@ module culturestools.gui {
       javafx.fxml,
       javafx.graphics,
       info.picocli;
+  opens me.nithanim.cultures.multitool.viewer to
+      javafx.fxml;
 }

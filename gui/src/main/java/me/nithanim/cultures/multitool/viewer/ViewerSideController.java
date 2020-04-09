@@ -1,4 +1,4 @@
-package me.nithanim.cultures.multitool;
+package me.nithanim.cultures.multitool.viewer;
 
 import java.io.IOException;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -9,7 +9,8 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import lombok.SneakyThrows;
-import me.nithanim.cultures.multitool.MainController.TreeData;
+import me.nithanim.cultures.multitool.TreeData;
+import me.nithanim.cultures.multitool.Util;
 
 public class ViewerSideController {
   private Parent bmdToolParent;
