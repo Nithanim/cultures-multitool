@@ -26,7 +26,10 @@
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </VBox.margin>
                   </Label>
-                  <TextField fx:id="tfBmdPath" editable="false" promptText="BMD" />
+                  <TextField fx:id="tfBmdPath" editable="false" promptText="BMD">
+                     <VBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </VBox.margin></TextField>
                   <HBox>
                      <children>
                         <CheckBox fx:id="chbBmdSync" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" selected="true" text="Sync with tree">
@@ -94,9 +97,6 @@
             <HBox>
                <children>
                   <CheckBox fx:id="chbFrameSelection" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Render only frame">
-                     <padding>
-                        <Insets left="5.0" right="5.0" />
-                     </padding>
                      <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </HBox.margin>
