@@ -6,9 +6,13 @@ import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.WritableRaster;
 import java.nio.IntBuffer;
+import java.util.Collection;
+import java.util.stream.Collectors;
+import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
+import javafx.stage.FileChooser.ExtensionFilter;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile.LibFileFile;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeRegular;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
@@ -73,5 +77,16 @@ public class FxUtil {
     } else {
       return null;
     }
+  }
+
+  public static ExtensionFilter generateExtensionFilterForAllTypes(
+      ObservableList<ExtensionFilter> efs) {
+    return new ExtensionFilter(
+        "All known",
+        efs.stream()
+            .map(ExtensionFilter::getExtensions)
+            .flatMap(Collection::stream)
+            .distinct()
+            .collect(Collectors.toList()));
   }
 }

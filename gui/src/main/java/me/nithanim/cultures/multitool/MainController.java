@@ -31,6 +31,7 @@ import javafx.scene.control.TreeView;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import lombok.SneakyThrows;
 import me.nithanim.cultures.format.cif.CifFile;
 import me.nithanim.cultures.format.cif.CifFileUtil;
@@ -59,6 +60,11 @@ public class MainController implements Initializable {
     menuItemOpen.setOnAction(
         ae -> {
           FileChooser fc = new FileChooser();
+          fc.getExtensionFilters().add(new ExtensionFilter("Lib/c2m", "*.lib", "*.c2m"));
+          fc.getExtensionFilters()
+              .add(FxUtil.generateExtensionFilterForAllTypes(fc.getExtensionFilters()));
+          fc.setSelectedExtensionFilter(
+              fc.getExtensionFilters().get(fc.getExtensionFilters().size() - 1));
           File f = fc.showOpenDialog(fileTree.getScene().getWindow());
           if (f == null) {
             return;
