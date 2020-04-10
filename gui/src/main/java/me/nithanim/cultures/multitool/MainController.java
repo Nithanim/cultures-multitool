@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,7 +19,10 @@ import java.util.stream.Collectors;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
@@ -28,10 +32,13 @@ import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import lombok.SneakyThrows;
+import me.nithanim.cultures.format.cif.CifFile;
+import me.nithanim.cultures.format.cif.CifFileUtil;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile.LibFileDirectory;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile.LibFileFile;
 import me.nithanim.cultures.multitool.viewer.ViewerSideController;
+import org.apache.commons.io.IOUtils;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeRegular;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -133,11 +140,14 @@ public class MainController implements Initializable {
     if (f == null) {
       return;
     }
+    Alert alert = new Alert(AlertType.CONFIRMATION, "Do you want to decode cif files?");
+    boolean decodeCif = alert.showAndWait().orElse(ButtonType.NO) == ButtonType.OK;
     Path p = f.toPath();
-    extractAllAction(fileTree.getRoot(), p);
+    extractAllAction(fileTree.getRoot(), p, decodeCif);
   }
 
-  private void extractAllAction(TreeItem<TreeData> item, Path p) throws IOException {
+  private void extractAllAction(TreeItem<TreeData> item, Path p, boolean decodeCif)
+      throws IOException {
     TreeData v = item.getValue();
     Path n = v == null ? p : p.resolve(v.getName());
     if (v == null || v.isDir()) {
@@ -145,14 +155,21 @@ public class MainController implements Initializable {
         Files.createDirectory(n);
       }
       for (TreeItem<TreeData> child : item.getChildren()) {
-        extractAllAction(child, n);
+        extractAllAction(child, n, decodeCif);
       }
     } else {
+      boolean isCifFile = decodeCif && v.getName().endsWith(".cif");
+      Path targetFile = isCifFile ? Util.changeFileExtension(n, "ini") : n;
       try (OutputStream out =
           Files.newOutputStream(
-              n, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+              targetFile, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
         try (InputStream in = v.getData().get()) {
-          in.transferTo(out);
+          if (isCifFile) {
+            CifFile cif = CifFileUtil.unpack(IOUtils.toByteArray(in));
+            IOUtils.write(String.join("\r\n", cif.getLines()), out, StandardCharsets.ISO_8859_1);
+          } else {
+            in.transferTo(out);
+          }
         }
       }
     }
