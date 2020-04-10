@@ -32,6 +32,7 @@ import javax.imageio.ImageIO;
 import lombok.SneakyThrows;
 import me.nithanim.cultures.format.bmd.BmdDecodeException;
 import me.nithanim.cultures.format.bmd.BmdFile;
+import me.nithanim.cultures.format.bmd.BmdFile.Type4AlphaInterpretation;
 import me.nithanim.cultures.format.bmd.LittleEndianDataInputStream;
 import me.nithanim.cultures.format.bmd.RawBmdFile;
 import me.nithanim.cultures.format.bmd.RawBmdFileReader;
@@ -50,6 +51,7 @@ public class BmdToolController implements Initializable {
   @FXML private Label lblFrameStats;
   @FXML private CheckBox chbFrameSelection;
   @FXML private TextField tfFrameSelection;
+  @FXML private CheckBox chkType4Alpha;
 
   private BmdFile bmdFile;
   private PcxFile pcxFile;
@@ -66,6 +68,7 @@ public class BmdToolController implements Initializable {
               updateFrames();
             });
     tfFrameSelection.textProperty().addListener(observable -> updateFrames());
+    chkType4Alpha.selectedProperty().addListener(observable -> updateFrames());
 
     contextMenu = new ContextMenu();
     MenuItem menuItem1 = new MenuItem("Export as ...");
@@ -136,7 +139,6 @@ public class BmdToolController implements Initializable {
     }
   }
 
-  @SneakyThrows
   private void updateFrames() {
     if (bmdFile != null && pcxFile != null) {
       imageMap.clear();
@@ -144,7 +146,11 @@ public class BmdToolController implements Initializable {
       int start = getRenderingStartFrame();
       int end = getRenderingEndFrame();
       for (int i = start; i < end; i++) {
-        addFrameToView(i);
+        try {
+          addFrameToView(i);
+        } catch (BmdDecodeException e) {
+          e.printStackTrace();
+        }
       }
     }
   }
@@ -176,7 +182,11 @@ public class BmdToolController implements Initializable {
   }
 
   private void addFrameToView(int i) throws BmdDecodeException {
-    BufferedImage img = bmdFile.getFrame(i, pcxFile.getPalette());
+    Type4AlphaInterpretation t4a =
+        chkType4Alpha.isSelected()
+            ? Type4AlphaInterpretation.ALPHA
+            : Type4AlphaInterpretation.IGNORE;
+    BufferedImage img = bmdFile.getFrame(i, pcxFile.getPalette(), t4a);
     if (img != null) {
       Image image = FxUtil.convertToFxImage(img);
       ImageView imageView = new ImageView(image);

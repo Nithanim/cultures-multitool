@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import lombok.Value;
+import me.nithanim.cultures.format.bmd.BmdFile.Type4AlphaInterpretation;
 
 public class Test {
   public static void main(String[] args) throws IOException, BmdDecodeException {
@@ -29,8 +30,8 @@ public class Test {
     byte[] palette = generateRandomPalette();
 
     for (int i = 0; i < bmd.getSize(); i++) {
-      BufferedImage img = bmd.getFrame(i, palette);
-      if(img != null) {
+      BufferedImage img = bmd.getFrame(i, palette, Type4AlphaInterpretation.ALPHA);
+      if (img != null) {
         ImageIO.write(img, "PNG", Files.newOutputStream(Paths.get("/tmp/test" + i + ".png")));
       }
     }

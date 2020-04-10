@@ -96,6 +96,11 @@
                </VBox.margin></Label>
             <HBox>
                <children>
+                  <CheckBox fx:id="chkType4Alpha" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Type 4 second value is alpha">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+                  </CheckBox>
                   <CheckBox fx:id="chbFrameSelection" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Render only frame">
                      <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

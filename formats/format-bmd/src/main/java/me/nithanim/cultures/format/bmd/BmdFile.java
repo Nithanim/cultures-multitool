@@ -14,13 +14,14 @@ public class BmdFile {
     return rawBmdFile.getFrameInfo().size();
   }
 
-  public BufferedImage getFrame(int frame, byte[] palette) throws BmdDecodeException {
+  public BufferedImage getFrame(int frame, byte[] palette, Type4AlphaInterpretation t4i)
+      throws BmdDecodeException {
     try {
       BmdFrameInfo frameInfo = rawBmdFile.getFrameInfo().get(frame);
       if (frameInfo.getType() == 0) {
         return null;
       } else {
-        Bitmap bmp = extractFrame(rawBmdFile, frameInfo, palette);
+        Bitmap bmp = extractFrame(rawBmdFile, frameInfo, palette, t4i);
         return convertToImage(bmp);
       }
     } catch (Exception ex) {
@@ -29,7 +30,8 @@ public class BmdFile {
   }
 
   // TODO Speedup would be to decode the frame without palette to be able to change it dynamically
-  private Bitmap extractFrame(RawBmdFile bmdFile, BmdFrameInfo frameInfo, byte[] palette) {
+  private Bitmap extractFrame(
+      RawBmdFile bmdFile, BmdFrameInfo frameInfo, byte[] palette, Type4AlphaInterpretation t4i) {
     int frameType = frameInfo.getType();
     if (frameType != 1 && frameType != 2 && frameType != 4) {
       throw new UnsupportedOperationException("Frame type " + frameType + " is not supported!");
@@ -59,7 +61,12 @@ public class BmdFile {
             int color, alpha;
             if (frameType == BmdFrameInfo.TYPE_EXTENDED) {
               color = getFromPalette(palette, pixels[pixelPointer++] & 0xFF);
-              alpha = pixels[pixelPointer++] & 0xFF;
+              if (t4i == Type4AlphaInterpretation.ALPHA) {
+                alpha = pixels[pixelPointer++] & 0xFF;
+              } else {
+                alpha = 0xFF;
+                pixelPointer++;
+              }
             } else if (frameType == BmdFrameInfo.TYPE_NORMAL) {
               alpha = 0xFF;
               color = getFromPalette(palette, pixels[pixelPointer++] & 0xFF);
@@ -108,5 +115,10 @@ public class BmdFile {
     BufferedImage bu = new BufferedImage(bmp.getW(), bmp.getH(), BufferedImage.TYPE_INT_ARGB);
     bu.getRaster().setDataElements(0, 0, bmp.getW(), bmp.getH(), bmp.getColors());
     return bu;
+  }
+
+  public enum Type4AlphaInterpretation {
+    ALPHA,
+    IGNORE
   }
 }
