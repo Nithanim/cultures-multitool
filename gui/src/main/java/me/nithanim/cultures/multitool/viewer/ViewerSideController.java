@@ -60,7 +60,9 @@ public class ViewerSideController {
       return;
     }
     boolean newBmdOpen = false;
-    if (file.getName().endsWith(".txt") || file.getName().endsWith(".hlt")) {
+    if (file.getName().endsWith(".txt")
+        || file.getName().endsWith(".hlt")
+        || file.getName().endsWith(".ini")) {
       pane.getChildren().clear();
       ViewerSideHandlers.handleTxt(file, pane);
     } else if (file.getName().endsWith(".cif")) {

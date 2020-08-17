@@ -58,6 +58,8 @@ public class FxUtil {
       return FontIcon.of(FontAwesomeRegular.FILE_IMAGE);
     } else if (file.getName().endsWith(".cif")) {
       return FontIcon.of(FontAwesomeRegular.FILE_WORD);
+    } else if (file.getName().endsWith(".ini")) {
+      return FontIcon.of(FontAwesomeRegular.FILE_WORD);
     } else if (file.getName().endsWith(".hlt")) {
       return FontIcon.of(FontAwesomeRegular.FILE_WORD);
     } else if (file.getName().endsWith(".txt")) {
