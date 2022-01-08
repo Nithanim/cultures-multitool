@@ -1,0 +1,1 @@
+./mvnw compile exec:java

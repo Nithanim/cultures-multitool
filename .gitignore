@@ -1,9 +1,14 @@
 /*
 
+!/.mvn
 !/formats
 !/gui
 !/package
 !/.gitignore
 !/pom.xml
+!/mvnw
+!/mvnw.cmd
 !/LICENSE
 !/README.md
+!/start
+!/start.cmd

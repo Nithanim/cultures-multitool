@@ -91,6 +91,14 @@
           </compilerArgs>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <configuration>
+          <skip>false</skip>
+          <mainClass>me.nithanim.cultures.multitool.Main</mainClass>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
