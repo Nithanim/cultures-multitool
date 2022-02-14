@@ -77,7 +77,7 @@
             <path>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
-              <version>1.18.12</version>
+              <version>1.18.22</version>
             </path>
             <path>
               <groupId>info.picocli</groupId>
@@ -96,9 +96,86 @@
         <artifactId>exec-maven-plugin</artifactId>
         <configuration>
           <skip>false</skip>
-          <mainClass>me.nithanim.cultures.multitool.Main</mainClass>
+          <mainClass>${mainClass}</mainClass>
         </configuration>
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>package</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-dependencies</id>
+                <phase>prepare-package</phase>
+                <goals>
+                  <goal>copy-dependencies</goal>
+                </goals>
+                <configuration>
+                  <outputDirectory>${project.build.directory}/libs</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <phase>validate</phase>
+                <id>parse-version</id>
+                <goals>
+                  <goal>parse-version</goal>
+                </goals>
+                <configuration>
+                  <propertyPrefix>parsedVersion</propertyPrefix>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>com.google.code.maven-replacer-plugin</groupId>
+            <artifactId>maven-replacer-plugin</artifactId>
+            <version>1.4.1</version>
+            <executions>
+              <execution>
+                <phase>process-sources</phase>
+                <goals>
+                  <goal>replace</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <file>../jpackage.template.cfg</file>
+              <outputFile>../jpackage.cfg</outputFile>
+              <replacements>
+                <replacement>
+                  <token>VERSION</token>
+                  <!-- ${project.version} potentially has "-SNAPSHOT" and windows msi does not like that -->
+                  <value>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</value>
+                </replacement>
+                <replacement>
+                  <token>MAINCLASS</token>
+                  <value>${mainClass}</value>
+                </replacement>
+                <replacement>
+                  <token>MAINJAR</token>
+                  <value>../${project.build.finalName}.jar</value>
+                </replacement>
+              </replacements>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+  <properties>
+    <mainClass>me.nithanim.cultures.multitool.Main</mainClass>
+  </properties>
 </project>

@@ -3,7 +3,7 @@
 !/.mvn
 !/formats
 !/gui
-!/package
+!/.github
 !/.gitignore
 !/pom.xml
 !/mvnw
@@ -12,3 +12,5 @@
 !/README.md
 !/start
 !/start.cmd
+!/jpackage*
+/jpackage.cfg
