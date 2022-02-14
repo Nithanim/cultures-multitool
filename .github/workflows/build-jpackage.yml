@@ -1,0 +1,65 @@
+# https://github.com/sualeh/build-jpackage/blob/master/.github/workflows/build-jpackage.yml
+
+name: Build Installers
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-linux-installer:
+    name: Build Installer on Linux
+    runs-on: ubuntu-latest
+    steps:
+
+      - id: checkout-code
+        name: Checkout code
+        uses: actions/checkout@v2
+      - id: setup-jdk
+        name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17
+
+      - id: build
+        name: Build distribution
+        run: |
+          mvn package -Ppackage
+          jpackage --verbose "@jpackage.cfg" "@jpackage-linux.cfg"
+
+      - id: upload-installer
+        name: Upload installer
+        uses: actions/upload-artifact@v2
+        with:
+          name: debian_x86_64
+          path: distributions/*
+          retention-days: 3
+
+
+  build-windows-installer:
+    name: Build Installer on Windows
+    runs-on: windows-latest
+    steps:
+
+      - id: checkout-code
+        name: Checkout code
+        uses: actions/checkout@v2
+      - id: setup-jdk
+        name: Setup JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17
+
+      - id: build
+        name: Build distribution
+        run: |
+          mvn package -Ppackage
+          jpackage --verbose "@jpackage.cfg" "@jpackage-windows.cfg"
+
+      - id: upload-installer
+        name: Upload installer
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows_x86_64
+          path: distributions/*
+          retention-days: 3
+

@@ -11,14 +11,13 @@
   <modules>
     <module>formats</module>
     <module>gui</module>
-    <module>package</module>
   </modules>
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
-        <version>1.18.12</version>
+        <version>1.18.22</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
