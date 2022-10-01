@@ -31,6 +31,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import lombok.SneakyThrows;
 import me.nithanim.cultures.format.cif.CifFile;
 import me.nithanim.cultures.format.cif.CifFileUtil;
+import me.nithanim.cultures.format.lib.LibFormat;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile;
 import me.nithanim.cultures.multitool.helper.FileTreeBuilder;
 import me.nithanim.cultures.multitool.helper.FolderTreeBuilder;
@@ -46,6 +47,7 @@ public class MainController implements Initializable {
   @FXML private TreeView<TreeData> fileTree;
   @FXML private VBox viewerPane;
   @FXML private CheckBox chbBmdView;
+  @FXML private CheckBox chbCulturesOneWorkaround;
 
   @SneakyThrows
   @Override
@@ -110,7 +112,10 @@ public class MainController implements Initializable {
 
   private void readAndUseFileLib(Path p) throws IOException {
     SeekableByteChannel channel = Files.newByteChannel(p);
-    ReadableLibFile lib = new ReadableLibFile(channel);
+    ReadableLibFile lib =
+        new ReadableLibFile(
+            channel,
+            chbCulturesOneWorkaround.isSelected() ? LibFormat.CULTURES1 : LibFormat.CULTURES2);
 
     fileTree.setShowRoot(false);
     fileTree.setRoot(FileTreeBuilder.buildTree("", lib.getRoot()));

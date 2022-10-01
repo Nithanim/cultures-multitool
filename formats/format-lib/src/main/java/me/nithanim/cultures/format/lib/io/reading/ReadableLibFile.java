@@ -22,16 +22,15 @@ public class ReadableLibFile implements AutoCloseable {
   private final SeekableByteChannel channel;
   private final LibFileDirectory root;
 
-  public ReadableLibFile(Path p) throws IOException {
-    this(Files.newByteChannel(p));
+  public ReadableLibFile(Path p, LibFormat libFormat) throws IOException {
+    this(Files.newByteChannel(p), libFormat);
   }
 
-  public ReadableLibFile(SeekableByteChannel channel) throws IOException {
+  public ReadableLibFile(SeekableByteChannel channel, LibFormat libFormat) throws IOException {
     this.channel = channel;
     this.root = new LibFileDirectory(null);
     LibFileInfo metas =
-        LibFileUtil.read(
-            new NonClosableInputStream(Channels.newInputStream(channel)), LibFormat.CULTURES2);
+        LibFileUtil.read(new NonClosableInputStream(Channels.newInputStream(channel)), libFormat);
     initTree(metas);
   }
 
