@@ -53,28 +53,32 @@ public class FxUtil {
     return writableImage;
   }
 
-  static FontIcon getIconForFile(LibFileFile file) {
-    if (file.getName().endsWith(".bmd")) {
+  public static FontIcon getIconForFile(LibFileFile file) {
+    return getIconForFile(file.getName());
+  }
+
+  public static FontIcon getIconForFile(String fileName) {
+    if (fileName.endsWith(".bmd")) {
       return FontIcon.of(FontAwesomeRegular.FILE_IMAGE);
-    } else if (file.getName().endsWith(".cif")) {
+    } else if (fileName.endsWith(".cif")) {
       return FontIcon.of(FontAwesomeRegular.FILE_WORD);
-    } else if (file.getName().endsWith(".ini")) {
+    } else if (fileName.endsWith(".ini")) {
       return FontIcon.of(FontAwesomeRegular.FILE_WORD);
-    } else if (file.getName().endsWith(".hlt")) {
+    } else if (fileName.endsWith(".hlt")) {
       return FontIcon.of(FontAwesomeRegular.FILE_WORD);
-    } else if (file.getName().endsWith(".txt")) {
+    } else if (fileName.endsWith(".txt")) {
       return FontIcon.of(FontAwesomeRegular.FILE_WORD);
-    } else if (file.getName().endsWith(".bmp")) {
+    } else if (fileName.endsWith(".bmp")) {
       return FontIcon.of(FontAwesomeRegular.FILE_IMAGE);
-    } else if (file.getName().endsWith(".fnt")) {
+    } else if (fileName.endsWith(".fnt")) {
       return FontIcon.of(FontAwesomeRegular.FILE_IMAGE);
-    } else if (file.getName().endsWith(".pcx")) {
+    } else if (fileName.endsWith(".pcx")) {
       return FontIcon.of(FontAwesomeRegular.FILE_IMAGE);
-    } else if (file.getName().endsWith(".c2m")) {
+    } else if (fileName.endsWith(".c2m")) {
       return FontIcon.of(FontAwesomeSolid.GLOBE_EUROPE);
-    } else if (file.getName().endsWith(".dat")) {
+    } else if (fileName.endsWith(".dat")) {
       return FontIcon.of(FontAwesomeSolid.GLOBE_EUROPE);
-    } else if (file.getName().endsWith(".wav")) {
+    } else if (fileName.endsWith(".wav")) {
       return FontIcon.of(FontAwesomeRegular.FILE_AUDIO);
     } else {
       return null;

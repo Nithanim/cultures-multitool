@@ -5,17 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
 import java.util.ResourceBundle;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -36,17 +32,16 @@ import lombok.SneakyThrows;
 import me.nithanim.cultures.format.cif.CifFile;
 import me.nithanim.cultures.format.cif.CifFileUtil;
 import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile;
-import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile.LibFileDirectory;
-import me.nithanim.cultures.format.lib.io.reading.ReadableLibFile.LibFileFile;
+import me.nithanim.cultures.multitool.helper.FileTreeBuilder;
+import me.nithanim.cultures.multitool.helper.FolderTreeBuilder;
 import me.nithanim.cultures.multitool.viewer.ViewerSideController;
 import org.apache.commons.io.IOUtils;
-import org.kordamp.ikonli.fontawesome5.FontAwesomeRegular;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 public class MainController implements Initializable {
   @FXML private Button btnFileReload;
   @FXML private TextField tfFilePath;
-  @FXML private MenuItem menuItemOpen;
+  @FXML private MenuItem menuItemOpenFile;
+  @FXML private MenuItem menuItemOpenFolder;
   @FXML private MenuItem menuItemExtractAll;
   @FXML private TreeView<TreeData> fileTree;
   @FXML private VBox viewerPane;
@@ -57,30 +52,38 @@ public class MainController implements Initializable {
   public void initialize(URL url, ResourceBundle resourceBundle) {
     new ViewerSideController(
         viewerPane, fileTree.getSelectionModel().selectedItemProperty(), chbBmdView);
-    menuItemOpen.setOnAction(
+    menuItemOpenFile.setOnAction(
         ae -> {
           FileChooser fc = new FileChooser();
-          fc.getExtensionFilters().add(new ExtensionFilter("Lib/c2m", "*.lib", "*.c2m"));
+          fc.getExtensionFilters().add(new ExtensionFilter("lib/c2m", "*.lib", "*.c2m"));
+          fc.getExtensionFilters()
+              .add(new ExtensionFilter("cif/tab/sal", "*.cif", "*.tab", "*.sal"));
           fc.getExtensionFilters()
               .add(FxUtil.generateExtensionFilterForAllTypes(fc.getExtensionFilters()));
           fc.setSelectedExtensionFilter(
               fc.getExtensionFilters().get(fc.getExtensionFilters().size() - 1));
           File f = fc.showOpenDialog(fileTree.getScene().getWindow());
-          if (f == null) {
-            return;
+          if (f != null) {
+            open(f.toPath());
           }
-          Path p = f.toPath();
-          openFile(p);
         });
-    btnFileReload.setOnAction(ae -> openFile(Paths.get(tfFilePath.getText())));
+    menuItemOpenFolder.setOnAction(
+        ae -> {
+          DirectoryChooser dc = new DirectoryChooser();
+          File f = dc.showDialog(fileTree.getScene().getWindow());
+          if (f != null) {
+            open(f.toPath());
+          }
+        });
+    btnFileReload.setOnAction(ae -> open(Paths.get(tfFilePath.getText())));
 
     menuItemExtractAll.setOnAction(this::extractAllAction);
   }
 
-  public void openFile(Path p) {
+  public void open(Path p) {
     try {
       fileTree.setRoot(null);
-      readAndUseFile(p);
+      readAndUsePath(p);
       tfFilePath.setText(p.toString());
     } catch (Exception ex) {
       viewerPane.getChildren().clear();
@@ -88,52 +91,33 @@ public class MainController implements Initializable {
     }
   }
 
-  private void readAndUseFile(Path p) throws IOException {
-    ReadableLibFile lib = new ReadableLibFile(p);
+  private void readAndUsePath(Path p) throws IOException {
+    if (Files.isDirectory(p)) {
+      readAndUseFolder(p);
+    } else {
+      readAndUseFileLib(p);
+    }
+  }
 
+  private void readAndUseFolder(Path p) throws IOException {
     fileTree.setShowRoot(false);
-    fileTree.setRoot(buildTree("", lib.getRoot()));
+    fileTree.setRoot(FolderTreeBuilder.buildTree(p));
     TreeItem<TreeData> root = fileTree.getRoot();
     if (root != null) {
       root.getChildren().forEach(c -> c.setExpanded(true));
     }
   }
 
-  private TreeItem<TreeData> buildTree(String path, LibFileDirectory rootDir) {
-    TreeItem<TreeData> rootItem = new TreeItem<>();
-    rootItem.setGraphic(FontIcon.of(FontAwesomeRegular.FILE_ARCHIVE));
-    Collection<LibFileDirectory> sortedDirectories =
-        rootDir.getDirectories().values().stream()
-            .sorted(Comparator.comparing(LibFileDirectory::getName))
-            .collect(Collectors.toList());
-    for (LibFileDirectory dir : sortedDirectories) {
-      TreeItem<TreeData> sub = buildTree(path + "\\" + dir.getName(), dir);
-      sub.setValue(new TreeData(true, path + "\\" + dir.getName(), dir.getName(), null));
-      sub.setGraphic(FontIcon.of(FontAwesomeRegular.FOLDER));
-      rootItem.getChildren().add(sub);
+  private void readAndUseFileLib(Path p) throws IOException {
+    SeekableByteChannel channel = Files.newByteChannel(p);
+    ReadableLibFile lib = new ReadableLibFile(channel);
+
+    fileTree.setShowRoot(false);
+    fileTree.setRoot(FileTreeBuilder.buildTree("", lib.getRoot()));
+    TreeItem<TreeData> root = fileTree.getRoot();
+    if (root != null) {
+      root.getChildren().forEach(c -> c.setExpanded(true));
     }
-    List<LibFileFile> sortedFiles =
-        rootDir.getFiles().values().stream()
-            .sorted(Comparator.comparing(LibFileFile::getName))
-            .collect(Collectors.toList());
-    for (LibFileFile file : sortedFiles) {
-      TreeItem<TreeData> item = new TreeItem<>();
-      item.setValue(
-          new TreeData(
-              false,
-              path + "\\" + file.getName(),
-              file.getName(),
-              new Supplier<InputStream>() {
-                @Override
-                @SneakyThrows
-                public InputStream get() {
-                  return file.getData().getInputStream();
-                }
-              }));
-      item.setGraphic(FxUtil.getIconForFile(file));
-      rootItem.getChildren().add(item);
-    }
-    return rootItem;
   }
 
   @SneakyThrows

@@ -26,7 +26,7 @@ public class MainFx extends Application {
     stage.show();
 
     if (cli.fileToOpen != null) {
-      controller.openFile(cli.fileToOpen);
+      controller.open(cli.fileToOpen);
     }
   }
 }

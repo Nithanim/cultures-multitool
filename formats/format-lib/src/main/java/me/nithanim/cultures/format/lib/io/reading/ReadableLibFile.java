@@ -11,23 +11,27 @@ import java.util.Map;
 import lombok.Data;
 import lombok.Value;
 import me.nithanim.cultures.format.io.LittleEndianDataInputStream;
+import me.nithanim.cultures.format.io.NonClosableInputStream;
 import me.nithanim.cultures.format.lib.LibFileInfo;
 import me.nithanim.cultures.format.lib.LibFileUtil;
 import me.nithanim.cultures.format.lib.LibFormat;
 import me.nithanim.cultures.format.lib.io.FileMeta;
-import me.nithanim.cultures.format.io.NonClosableInputStream;
 import org.apache.commons.io.input.BoundedInputStream;
 
 public class ReadableLibFile implements AutoCloseable {
-  private final Path path;
   private final SeekableByteChannel channel;
   private final LibFileDirectory root;
 
   public ReadableLibFile(Path p) throws IOException {
-    this.path = p;
-    this.channel = Files.newByteChannel(p);
+    this(Files.newByteChannel(p));
+  }
+
+  public ReadableLibFile(SeekableByteChannel channel) throws IOException {
+    this.channel = channel;
     this.root = new LibFileDirectory(null);
-    LibFileInfo metas = LibFileUtil.read(new NonClosableInputStream(Channels.newInputStream(channel)), LibFormat.CULTURES2);
+    LibFileInfo metas =
+        LibFileUtil.read(
+            new NonClosableInputStream(Channels.newInputStream(channel)), LibFormat.CULTURES2);
     initTree(metas);
   }
 
