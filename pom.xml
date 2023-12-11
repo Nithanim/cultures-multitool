@@ -17,7 +17,7 @@
       <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
-        <version>1.18.22</version>
+        <version>${lombok.version}</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
@@ -47,4 +47,9 @@
       </plugins>
     </pluginManagement>
   </build>
+  <properties>
+    <lombok.version>1.18.30</lombok.version>
+    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.source>21</maven.compiler.source>
+  </properties>
 </project>
